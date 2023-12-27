@@ -1,9 +1,9 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
+import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.repository.TrainerRepository;
-import com.example.learn_spring_core.repository.entity.Trainer;
-import com.example.learn_spring_core.repository.entity.TrainingType;
+import com.example.learn_spring_core.service.impl.TrainerServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,10 +11,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainer;
+import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -24,7 +24,7 @@ class TrainerServiceTest extends TestsParent {
     private TrainerRepository trainerRepository;
 
     @InjectMocks
-    private TrainerService trainerService;
+    private TrainerServiceImpl trainerService;
 
     @BeforeEach
     void setUp() {
@@ -41,7 +41,7 @@ class TrainerServiceTest extends TestsParent {
         Trainer trainer = new Trainer();
         trainer.setFirstName("John");
         trainer.setLastName("Doe");
-        trainer.setTrainingTypeId(new TrainingType());
+        trainer.setTrainingTypeId(1L);
         when(trainerRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
 
         trainerService.create(trainer);
@@ -51,18 +51,7 @@ class TrainerServiceTest extends TestsParent {
 
     @Test
     void testFindAllTrainees() {
-        Trainer trainee1 = createSampleTrainer();
-
-        Trainer trainee2 = new Trainer();
-        trainee2.setId(2L);
-        trainee2.setFirstName("Alice");
-        trainee2.setLastName("Smith");
-        trainee2.setUserName("alice.smith");
-        trainee2.setPassword("securepass");
-        trainee2.setIsActive(true);
-        trainee2.setTrainingTypeId(new TrainingType());
-
-        List<Trainer> trainees = Arrays.asList(trainee1, trainee2);
+        List<Trainer> trainees = createSampleTrainers(true, 3);
         when(trainerRepository.findAll()).thenReturn(trainees);
 
         List<Trainer> allTrainees = trainerService.findAll();
@@ -74,7 +63,7 @@ class TrainerServiceTest extends TestsParent {
     @Test
     void testGetTraineeById() {
         Long traineeId = 1L;
-        Trainer trainer = createSampleTrainer();
+        Trainer trainer = createSampleTrainer(true);
 
         when(trainerRepository.getById(traineeId)).thenReturn(trainer);
 
@@ -87,7 +76,7 @@ class TrainerServiceTest extends TestsParent {
     @Test
     void testUpdateTrainee() {
         Long traineeId = 1L;
-        Trainer sampleTrainee = createSampleTrainer();
+        Trainer sampleTrainee = createSampleTrainer(true);
         when(trainerRepository.getById(traineeId)).thenReturn(sampleTrainee);
 
         trainerService.update(sampleTrainee);

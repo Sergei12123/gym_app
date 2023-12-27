@@ -1,113 +1,90 @@
 package com.example.learn_spring_core.repository;
 
-import com.example.learn_spring_core.TestsParent;
-import com.example.learn_spring_core.component.KeyHolderGenerator;
-import com.example.learn_spring_core.repository.entity.Trainer;
-import org.junit.jupiter.api.BeforeEach;
+import com.example.learn_spring_core.entity.Trainer;
+import com.example.learn_spring_core.entity.TrainingType;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.support.KeyHolder;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainer;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static com.example.learn_spring_core.utils.SampleCreator.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-class TrainerRepositoryTest extends TestsParent {
+class TrainerRepositoryTest extends BaseRepositoryTest {
 
-    @Mock
-    private JdbcTemplate jdbcTemplate;
+    Trainer getSampleTrainerForSave(boolean saveRequired) {
+        Trainer sampleTrainer = createSampleTrainer(false);
 
-    @Mock
-    private KeyHolderGenerator keyHolderGenerator;
+        setForeignKey(sampleTrainer);
+        if (saveRequired) trainerRepository.save(sampleTrainer);
 
-    @InjectMocks
-    private TrainerRepository trainerRepository;
+        return sampleTrainer;
+    }
 
-    @BeforeEach
-    void setUp() {
-        KeyHolder keyHolder = Mockito.mock(KeyHolder.class);
-        when(keyHolder.getKey()).thenReturn(1L);
-        when(keyHolderGenerator.getNewGeneratedKeyHoler()).thenReturn(keyHolder);
+    private void setForeignKey(Trainer sampleTrainer) {
+        TrainingType trainingType = createSampleTrainingType(false);
+        trainingTypeRepository.save(trainingType);
+        sampleTrainer.setTrainingTypeId(trainingType.getId());
     }
 
     @Test
     void saveTrainer() {
-        Trainer trainerToSave = createSampleTrainer();
-        when(jdbcTemplate.update(any(PreparedStatementCreator.class), any(KeyHolder.class))).thenReturn(1);
+        Trainer trainerToSave = getSampleTrainerForSave(false);
 
         trainerRepository.save(trainerToSave);
 
-        verify(jdbcTemplate, times(1)).update(any(PreparedStatementCreator.class), any(KeyHolder.class));
+        Trainer foundTrainer = trainerRepository.getById(trainerToSave.getId());
+        assertEquals(trainerToSave, foundTrainer);
     }
 
     @Test
     void updateTrainer() {
-        Trainer trainerToUpdate = createSampleTrainer();
+        Trainer trainerToUpdate = getSampleTrainerForSave(true);
+        trainerToUpdate.setFirstName("new firstName");
 
         trainerRepository.update(trainerToUpdate);
-
-        verify(jdbcTemplate, times(1)).update(
-            TrainerRepository.UPDATE_SQL,
-            trainerToUpdate.getTrainingTypeId().getId(),
-            trainerToUpdate.getFirstName(),
-            trainerToUpdate.getLastName(),
-            trainerToUpdate.getUserName(),
-            trainerToUpdate.getPassword(),
-            trainerToUpdate.getIsActive() ? 1 : 0,
-            trainerToUpdate.getId()
-        );
+        assertEquals(trainerToUpdate.getFirstName(), trainerRepository.getById(trainerToUpdate.getId()).getFirstName());
     }
 
     @Test
     void existsByUsername() {
-        String username = "john.doe";
-        int expectedCount = 1;
-        when(jdbcTemplate.queryForObject(any(String.class), eq(Integer.class), eq(username))).thenReturn(expectedCount);
+        Trainer sampleTrainer = getSampleTrainerForSave(true);
 
-        trainerRepository.existsByUsername(username);
+        assertTrue(trainerRepository.existsByUsername(sampleTrainer.getUserName()));
+        assertFalse(trainerRepository.existsByUsername(sampleTrainer.getUserName() + "1"));
 
-        verify(jdbcTemplate, times(1)).queryForObject(any(String.class), eq(Integer.class), eq(username));
     }
 
     @Test
     void findAllTrainer() {
-        when(jdbcTemplate.query(any(String.class), any(BeanPropertyRowMapper.class)))
-            .thenReturn(Arrays.asList(createSampleTrainer(), new Trainer(), new Trainer()));
+        List<Trainer> sampleTrainers = createSampleTrainers(false, 3);
+        for (Trainer trainer : sampleTrainers) {
+            setForeignKey(trainer);
+            trainerRepository.save(trainer);
+        }
 
         List<Trainer> result = trainerRepository.findAll();
 
-        assertEquals(3, result.size());
-        verify(jdbcTemplate, times(1)).query(any(String.class), any(BeanPropertyRowMapper.class));
+        assertEquals(sampleTrainers.size(), result.size());
+        assertTrue(sampleTrainers.containsAll(result) && result.containsAll(sampleTrainers));
     }
 
     @Test
     void getByIdTrainer() {
-        Long trainerId = 1L;
-        Trainer expectedTrainer = createSampleTrainer();
-        when(jdbcTemplate.queryForObject(any(String.class), any(BeanPropertyRowMapper.class))).thenReturn(expectedTrainer);
+        Trainer trainerToGet = getSampleTrainerForSave(true);
 
-        Trainer result = trainerRepository.getById(trainerId);
+        Trainer foundTrainer = trainerRepository.getById(trainerToGet.getId());
 
-        assertEquals(expectedTrainer, result);
-        verify(jdbcTemplate, times(1)).queryForObject(any(String.class), any(BeanPropertyRowMapper.class));
+        assertEquals(trainerToGet, foundTrainer);
     }
 
     @Test
     void deleteByIdTrainer() {
-        Long trainerId = 1L;
+        Trainer trainerToDelete = getSampleTrainerForSave(true);
 
-        trainerRepository.deleteById(trainerId);
+        trainerRepository.deleteById(trainerToDelete.getId());
 
-        verify(jdbcTemplate, times(1)).update(any(String.class), eq(trainerId));
+        assertNull(trainerRepository.getById(trainerToDelete.getId()));
     }
+
 }
 

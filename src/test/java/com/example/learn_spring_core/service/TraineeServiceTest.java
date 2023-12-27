@@ -1,8 +1,9 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
+import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.repository.TraineeRepository;
-import com.example.learn_spring_core.repository.entity.Trainee;
+import com.example.learn_spring_core.service.impl.TraineeServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ class TraineeServiceTest extends TestsParent {
     private TraineeRepository traineeRepository;
 
     @InjectMocks
-    private TraineeService traineeService;
+    private TraineeServiceImpl traineeService;
 
     @BeforeEach
     void setUp() {
@@ -63,7 +64,7 @@ class TraineeServiceTest extends TestsParent {
 
     @Test
     void testFindAllTrainees() {
-        Trainee trainee1 = createSampleTrainee();
+        Trainee trainee1 = createSampleTrainee(true);
 
         Trainee trainee2 = new Trainee();
         trainee2.setId(2L);
@@ -87,7 +88,7 @@ class TraineeServiceTest extends TestsParent {
     @Test
     void testGetTraineeById() {
         Long traineeId = 1L;
-        Trainee trainee = createSampleTrainee();
+        Trainee trainee = createSampleTrainee(true);
 
         when(traineeRepository.getById(traineeId)).thenReturn(trainee);
 
@@ -100,7 +101,7 @@ class TraineeServiceTest extends TestsParent {
     @Test
     void testUpdateTrainee() {
         Long traineeId = 1L;
-        Trainee sampleTrainee = createSampleTrainee();
+        Trainee sampleTrainee = createSampleTrainee(true);
         when(traineeRepository.getById(traineeId)).thenReturn(sampleTrainee);
 
         traineeService.update(sampleTrainee);

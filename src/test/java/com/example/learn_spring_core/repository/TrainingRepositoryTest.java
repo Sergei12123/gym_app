@@ -1,102 +1,93 @@
 package com.example.learn_spring_core.repository;
 
-import com.example.learn_spring_core.TestsParent;
-import com.example.learn_spring_core.component.KeyHolderGenerator;
-import com.example.learn_spring_core.repository.entity.Training;
-import org.junit.jupiter.api.BeforeEach;
+import com.example.learn_spring_core.entity.Trainee;
+import com.example.learn_spring_core.entity.Trainer;
+import com.example.learn_spring_core.entity.Training;
+import com.example.learn_spring_core.entity.TrainingType;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.support.KeyHolder;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static com.example.learn_spring_core.utils.SampleCreator.createSampleTraining;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static com.example.learn_spring_core.utils.SampleCreator.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-class TrainingRepositoryTest extends TestsParent {
+class TrainingRepositoryTest extends BaseRepositoryTest {
 
-    @Mock
-    private JdbcTemplate jdbcTemplate;
+    Training getSampleTraining(boolean saveRequired) {
+        Training sampleTraining = createSampleTraining(false);
 
-    @Mock
-    private KeyHolderGenerator keyHolderGenerator;
+        setAllForeignKeys(sampleTraining);
+        if (saveRequired) trainingRepository.save(sampleTraining);
 
-    @InjectMocks
-    private TrainingRepository trainingRepository;
+        return sampleTraining;
+    }
 
-    @BeforeEach
-    void setUp() {
-        KeyHolder keyHolder = Mockito.mock(KeyHolder.class);
-        when(keyHolder.getKey()).thenReturn(1L);
-        when(keyHolderGenerator.getNewGeneratedKeyHoler()).thenReturn(keyHolder);
+    private void setAllForeignKeys(Training sampleTraining) {
+        TrainingType trainingType = createSampleTrainingType(false);
+        trainingTypeRepository.save(trainingType);
+        sampleTraining.setTrainingTypeId(trainingType.getId());
+
+        Trainer trainer = createSampleTrainer(false);
+        trainer.setTrainingTypeId(trainingType.getId());
+        trainerRepository.save(trainer);
+        sampleTraining.setTrainerId(trainer.getId());
+
+        Trainee trainee = createSampleTrainee(false);
+        traineeRepository.save(trainee);
+        sampleTraining.setTraineeId(trainee.getId());
     }
 
     @Test
     void saveTraining() {
-        Training trainingToSave = createSampleTraining();
-        when(jdbcTemplate.update(any(PreparedStatementCreator.class), any(KeyHolder.class))).thenReturn(1);
+        Training trainingForSave = getSampleTraining(false);
 
-        trainingRepository.save(trainingToSave);
+        trainingRepository.save(trainingForSave);
 
-        verify(jdbcTemplate, times(1)).update(any(PreparedStatementCreator.class), any(KeyHolder.class));
+        Training foundTraining = trainingRepository.getById(trainingForSave.getId());
+        assertEquals(trainingForSave, foundTraining);
     }
 
     @Test
     void updateTraining() {
-        Training trainingToUpdate = createSampleTraining();
+        Training trainingToUpdate = getSampleTraining(true);
+        trainingToUpdate.setTrainingName("new training name");
 
         trainingRepository.update(trainingToUpdate);
-
-        verify(jdbcTemplate, times(1)).update(
-            TrainingRepository.UPDATE_SQL,
-            trainingToUpdate.getTraineeId().getId(),
-            trainingToUpdate.getTrainerId().getId(),
-            trainingToUpdate.getTrainingName(),
-            trainingToUpdate.getTrainingTypeId().getId(),
-            trainingToUpdate.getTrainingDate(),
-            trainingToUpdate.getTrainingDuration(),
-            trainingToUpdate.getId()
-        );
+        assertEquals(trainingToUpdate.getTrainingName(), trainingRepository.getById(trainingToUpdate.getId()).getTrainingName());
     }
 
     @Test
     void findAllTraining() {
-        when(jdbcTemplate.query(any(String.class), any(BeanPropertyRowMapper.class)))
-            .thenReturn(Arrays.asList(createSampleTraining(), new Training(), new Training()));
+
+        List<Training> sampleTrainings = createSampleTrainings(false, 3);
+        for (Training training : sampleTrainings) {
+            setAllForeignKeys(training);
+            trainingRepository.save(training);
+        }
 
         List<Training> result = trainingRepository.findAll();
 
-        assertEquals(3, result.size());
-        verify(jdbcTemplate, times(1)).query(any(String.class), any(BeanPropertyRowMapper.class));
+        assertEquals(sampleTrainings.size(), result.size());
+        assertTrue(sampleTrainings.containsAll(result) && result.containsAll(sampleTrainings));
     }
 
     @Test
     void getByIdTraining() {
-        Long trainingId = 1L;
-        Training expectedTraining = createSampleTraining();
-        when(jdbcTemplate.queryForObject(any(String.class), any(BeanPropertyRowMapper.class))).thenReturn(expectedTraining);
+        Training trainingForGet = getSampleTraining(true);
 
-        Training result = trainingRepository.getById(trainingId);
+        Training foundTraining = trainingRepository.getById(trainingForGet.getId());
 
-        assertEquals(expectedTraining, result);
-        verify(jdbcTemplate, times(1)).queryForObject(any(String.class), any(BeanPropertyRowMapper.class));
+        assertEquals(trainingForGet, foundTraining);
+
     }
 
     @Test
     void deleteByIdTraining() {
-        Long trainingId = 1L;
+        Training trainingToDelete = getSampleTraining(true);
 
-        trainingRepository.deleteById(trainingId);
+        trainingRepository.deleteById(trainingToDelete.getId());
 
-        verify(jdbcTemplate, times(1)).update(any(String.class), eq(trainingId));
+        assertNull(trainingRepository.getById(trainingToDelete.getId()));
     }
 }
 

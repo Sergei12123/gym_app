@@ -1,6 +1,6 @@
 package com.example.learn_spring_core;
 
-import com.example.learn_spring_core.repository.entity.BaseEntity;
+import com.example.learn_spring_core.entity.BaseEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mockito.Mock;

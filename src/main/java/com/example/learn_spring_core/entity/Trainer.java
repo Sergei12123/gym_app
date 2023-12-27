@@ -1,4 +1,4 @@
-package com.example.learn_spring_core.repository.entity;
+package com.example.learn_spring_core.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,6 +7,6 @@ import lombok.EqualsAndHashCode;
 @Data
 public class Trainer extends User {
 
-    private TrainingType trainingTypeId;
+    private Long trainingTypeId;
 
 }

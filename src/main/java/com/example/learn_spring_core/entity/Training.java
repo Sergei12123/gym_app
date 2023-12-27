@@ -1,4 +1,4 @@
-package com.example.learn_spring_core.repository.entity;
+package com.example.learn_spring_core.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,13 +9,13 @@ import java.time.LocalDate;
 @Data
 public class Training extends BaseEntity {
 
-    private Trainee traineeId;
+    private Long traineeId;
 
-    private Trainer trainerId;
+    private Long trainerId;
 
     private String trainingName;
 
-    private TrainingType trainingTypeId;
+    private Long trainingTypeId;
 
     private LocalDate trainingDate;
 

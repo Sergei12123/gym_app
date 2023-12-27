@@ -1,10 +1,6 @@
 package com.example.learn_spring_core.service;
 
-import com.example.learn_spring_core.repository.entity.Trainer;
-import org.springframework.stereotype.Service;
+import com.example.learn_spring_core.entity.Trainer;
 
-@Service
-public class TrainerService extends UserService<Trainer> {
-
+public interface TrainerService extends UserService<Trainer> {
 }
-

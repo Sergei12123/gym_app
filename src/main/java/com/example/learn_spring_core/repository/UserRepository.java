@@ -1,13 +1,9 @@
 package com.example.learn_spring_core.repository;
 
-import com.example.learn_spring_core.utils.StringCaseUtil;
+import com.example.learn_spring_core.entity.User;
 
-public abstract class UserRepository<T> extends BaseRepository<T> {
+public interface UserRepository<T extends User> extends BaseRepository<T> {
 
-    public boolean existsByUsername(String username) {
-        String sql = "SELECT COUNT(*) FROM " + StringCaseUtil.convertToSnakeCase(getEntityClass().getSimpleName()) + " WHERE user_name = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username);
-        return count != null && count > 0;
-    }
+    boolean existsByUsername(String username);
 
 }

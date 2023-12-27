@@ -1,56 +1,120 @@
 package com.example.learn_spring_core.utils;
 
-import com.example.learn_spring_core.repository.entity.Trainee;
-import com.example.learn_spring_core.repository.entity.Trainer;
-import com.example.learn_spring_core.repository.entity.Training;
-import com.example.learn_spring_core.repository.entity.TrainingType;
+import com.example.learn_spring_core.entity.Trainee;
+import com.example.learn_spring_core.entity.Trainer;
+import com.example.learn_spring_core.entity.Training;
+import com.example.learn_spring_core.entity.TrainingType;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class SampleCreator {
 
-    public static TrainingType createSampleTrainingType() {
-        TrainingType trainingType = new TrainingType();
-        trainingType.setId(1L);
-        trainingType.setTrainingTypeName("Base trainingType");
+    public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
+    public static TrainingType createSampleTrainingType(final boolean setId) {
+        TrainingType trainingType = new TrainingType();
+        if (setId) {
+            trainingType.setId(1L);
+        }
+        StringBuilder name = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            int randomIndex = new Random().nextInt(CHARACTERS.length());
+            name.append(CHARACTERS.charAt(randomIndex));
+        }
+        trainingType.setTrainingTypeName(name.toString());
         return trainingType;
     }
 
-    public static Trainee createSampleTrainee() {
+    public static List<TrainingType> createSampleTrainingTypes(boolean setId, int count){
+        final List<TrainingType> result = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            TrainingType trainingType = createSampleTrainingType(setId);
+            result.add(trainingType);
+        }
+        return result;
+    }
+
+    public static Trainee createSampleTrainee(boolean setId) {
         Trainee trainee = new Trainee();
-        trainee.setId(1L);
+        if (setId) {
+            trainee.setId(1L);
+        }
         trainee.setFirstName("John");
         trainee.setLastName("Doe");
         trainee.setDateOfBirth(LocalDate.of(1990, 5, 15));
         trainee.setAddress("123 Main St");
-        trainee.setUserName("john.doe");
+        trainee.setUserName("John.Doe");
         trainee.setPassword("password123");
         trainee.setIsActive(true);
         return trainee;
     }
 
-    public static Trainer createSampleTrainer() {
+    public static List<Trainee> createSampleTrainees(boolean setId, int count) {
+        final List<Trainee> result = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            Trainee trainee = createSampleTrainee(setId);
+            if (setId) {
+                trainee.setId((long) i);
+            }
+            result.add(trainee);
+        }
+        return result;
+    }
+
+    public static Trainer createSampleTrainer(boolean setId) {
         Trainer trainer = new Trainer();
-        trainer.setId(1L);
+        if (setId) {
+            trainer.setId(1L);
+        }
         trainer.setFirstName("John");
         trainer.setLastName("Doe");
         trainer.setUserName("john.doe");
         trainer.setPassword("password123");
         trainer.setIsActive(true);
-        trainer.setTrainingTypeId(createSampleTrainingType());
         return trainer;
     }
 
-    public static Training createSampleTraining() {
+    public static List<Trainer> createSampleTrainers(boolean setId, int count) {
+        final List<Trainer> result = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            Trainer trainer = createSampleTrainer(setId);
+            if (setId) {
+                trainer.setId((long) i);
+                trainer.setTrainingTypeId((long) i);
+            }
+            result.add(trainer);
+        }
+        return result;
+    }
+
+
+    public static Training createSampleTraining(boolean setId) {
         Training training = new Training();
-        training.setId(1L);
+        if (setId) {
+            training.setId(1L);
+        }
         training.setTrainingDate(LocalDate.of(2023, 5, 15));
         training.setTrainingDuration(2L);
         training.setTrainingName("Base training");
-        training.setTrainingTypeId(createSampleTrainingType());
-        training.setTraineeId(createSampleTrainee());
-        training.setTrainerId(createSampleTrainer());
         return training;
+    }
+
+    public static List<Training> createSampleTrainings(boolean setId, int count){
+        final List<Training> result = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            Training training = createSampleTraining(setId);
+            if (setId) {
+                training.setId((long) i);
+                training.setTrainingTypeId((long) i);
+                training.setTraineeId((long) i);
+                training.setTrainerId((long) i);
+            }
+            result.add(training);
+        }
+        return result;
     }
 }

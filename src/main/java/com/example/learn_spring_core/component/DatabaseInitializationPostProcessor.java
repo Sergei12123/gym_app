@@ -1,4 +1,4 @@
-package com.example.learn_spring_core.process;
+package com.example.learn_spring_core.component;
 
 import com.example.learn_spring_core.repository.BaseRepository;
 import org.springframework.beans.BeansException;
@@ -12,10 +12,13 @@ public class DatabaseInitializationPostProcessor implements BeanPostProcessor {
     @Value("${db.initialScriptPath}")
     private String dataFilePath;
 
+    private boolean isInitialized = false;
+
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof BaseRepository) {
+        if (bean instanceof BaseRepository<?> && !isInitialized) {
             ((BaseRepository<?>) bean).initializeDb(dataFilePath);
+            isInitialized = true;
         }
         return bean;
     }

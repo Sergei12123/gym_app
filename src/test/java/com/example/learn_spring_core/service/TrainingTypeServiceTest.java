@@ -1,8 +1,9 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
+import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.repository.TrainingTypeRepository;
-import com.example.learn_spring_core.repository.entity.TrainingType;
+import com.example.learn_spring_core.service.impl.TrainingTypeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -22,7 +23,7 @@ class TrainingTypeServiceTest extends TestsParent {
     private TrainingTypeRepository trainingTypeRepository;
 
     @InjectMocks
-    private TrainingTypeService trainingTypeService;
+    private TrainingTypeServiceImpl trainingTypeService;
 
     @BeforeEach
     void setUp() {
@@ -46,7 +47,7 @@ class TrainingTypeServiceTest extends TestsParent {
 
     @Test
     void testFindAllTrainingTypes() {
-        TrainingType trainingType1 = createSampleTrainingType();
+        TrainingType trainingType1 = createSampleTrainingType(true);
         TrainingType trainingType2 = new TrainingType();
         trainingType2.setId(2L);
         trainingType2.setTrainingTypeName("Base trainingType 2");
@@ -62,7 +63,7 @@ class TrainingTypeServiceTest extends TestsParent {
     @Test
     void testGetTrainingTypeById() {
         Long trainingTypeId = 1L;
-        TrainingType trainingType = createSampleTrainingType();
+        TrainingType trainingType = createSampleTrainingType(true);
         when(trainingTypeRepository.getById(trainingTypeId)).thenReturn(trainingType);
 
         TrainingType retrievedTrainingType = trainingTypeService.getById(trainingTypeId);

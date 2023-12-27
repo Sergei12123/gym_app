@@ -1,11 +1,9 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
+import com.example.learn_spring_core.entity.Training;
 import com.example.learn_spring_core.repository.TrainingRepository;
-import com.example.learn_spring_core.repository.entity.Trainee;
-import com.example.learn_spring_core.repository.entity.Trainer;
-import com.example.learn_spring_core.repository.entity.Training;
-import com.example.learn_spring_core.repository.entity.TrainingType;
+import com.example.learn_spring_core.service.impl.TrainingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -17,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTraining;
+import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainings;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -26,7 +25,7 @@ class TrainingServiceTest extends TestsParent {
     private TrainingRepository trainingRepository;
 
     @InjectMocks
-    private TrainingService trainingService;
+    private TrainingServiceImpl trainingService;
 
     @BeforeEach
     void setUp() {
@@ -40,13 +39,7 @@ class TrainingServiceTest extends TestsParent {
 
     @Test
     void testCreateTraining() {
-        Training training = new Training();
-        training.setTrainingDate(LocalDate.of(2023, 5, 15));
-        training.setTrainingDuration(2L);
-        training.setTrainingName("Base training");
-        training.setTrainingTypeId(new TrainingType());
-        training.setTraineeId(new Trainee());
-        training.setTrainerId(new Trainer());
+        Training training = createSampleTraining(false);
 
         trainingService.create(training);
 
@@ -55,17 +48,7 @@ class TrainingServiceTest extends TestsParent {
 
     @Test
     void testFindAllTrainings() {
-        Training training1 = createSampleTraining();
-
-        Training training2 = new Training();
-        training2.setId(2L);
-        training2.setTrainingDate(LocalDate.of(2023, 10, 15));
-        training2.setTrainingDuration(3L);
-        training2.setTrainingName("Base training 2");
-        training2.setTrainingTypeId(new TrainingType());
-        training2.setTraineeId(new Trainee());
-        training2.setTrainerId(new Trainer());
-        List<Training> trainings = Arrays.asList(training1, training2);
+        List<Training> trainings = createSampleTrainings(true, 3);
         when(trainingRepository.findAll()).thenReturn(trainings);
 
         List<Training> allTrainings = trainingService.findAll();
@@ -77,7 +60,7 @@ class TrainingServiceTest extends TestsParent {
     @Test
     void testGetTrainingById() {
         Long trainingId = 1L;
-        Training training = createSampleTraining();
+        Training training = createSampleTraining(true);
         when(trainingRepository.getById(trainingId)).thenReturn(training);
 
         Training retrievedTraining = trainingService.getById(trainingId);

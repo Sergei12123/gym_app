@@ -16,12 +16,6 @@ CREATE TABLE IF NOT EXISTS training_type
     training_type_name  VARCHAR(255) NOT NULL UNIQUE
 );
 
-INSERT IGNORE INTO training_type (training_type_name) VALUES ('Strength');
-INSERT IGNORE INTO training_type (training_type_name) VALUES ('Cardiovascular');
-INSERT IGNORE INTO training_type (training_type_name) VALUES ('High-Intensity Interval');
-INSERT IGNORE INTO training_type (training_type_name) VALUES ('Flexibility and Mobility');
-INSERT IGNORE INTO training_type (training_type_name) VALUES ('Functional');
-
 CREATE TABLE IF NOT EXISTS trainer
 (
     id                  INT AUTO_INCREMENT PRIMARY KEY,
@@ -34,7 +28,7 @@ CREATE TABLE IF NOT EXISTS trainer
     FOREIGN KEY (training_type_id) REFERENCES training_type(id)
 );
 
-CREATE TABLE IF NOT EXISTS trainer (
+CREATE TABLE IF NOT EXISTS training (
     id                  INT AUTO_INCREMENT PRIMARY KEY,
     trainee_id          INT,
     trainer_id          INT,
