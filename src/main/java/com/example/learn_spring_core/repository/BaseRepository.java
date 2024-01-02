@@ -4,6 +4,7 @@ import com.example.learn_spring_core.entity.BaseEntity;
 
 import java.util.List;
 
+
 public interface BaseRepository<T extends BaseEntity> {
 
     void initializeDb(String dataFilePath);

@@ -1,6 +1,6 @@
 package com.example.learn_spring_core.repository;
 
-import com.example.learn_spring_core.configuration.TestConfig;
+import com.example.learn_spring_core.configuration.AppConfig;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
@@ -9,11 +9,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestConfig.class)
+@ContextConfiguration(classes = AppConfig.class)
+@TestPropertySource("classpath:application-test.properties")
+@Transactional
 abstract class BaseRepositoryTest {
 
     @Autowired

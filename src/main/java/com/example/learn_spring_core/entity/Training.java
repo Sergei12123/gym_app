@@ -1,24 +1,37 @@
 package com.example.learn_spring_core.entity;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 
+@Setter
+@Getter
 @EqualsAndHashCode(callSuper = true)
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
 public class Training extends BaseEntity {
 
-    private Long traineeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainee_id", nullable = false)
+    private Trainee trainee;
 
-    private Long trainerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id", nullable = false)
+    private Trainer trainer;
 
+    @Column(name = "training_name")
     private String trainingName;
 
-    private Long trainingTypeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_type_id", nullable = false)
+    private TrainingType trainingType;
 
+    @Column(name = "training_date")
     private LocalDate trainingDate;
 
+    @Column(name = "training_duration")
     private Long trainingDuration;
 
 }

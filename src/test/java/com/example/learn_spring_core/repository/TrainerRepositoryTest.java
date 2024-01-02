@@ -23,7 +23,7 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
     private void setForeignKey(Trainer sampleTrainer) {
         TrainingType trainingType = createSampleTrainingType(false);
         trainingTypeRepository.save(trainingType);
-        sampleTrainer.setTrainingTypeId(trainingType.getId());
+        sampleTrainer.setTrainingType(trainingType);
     }
 
     @Test

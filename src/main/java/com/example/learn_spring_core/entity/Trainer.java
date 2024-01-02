@@ -1,12 +1,19 @@
 package com.example.learn_spring_core.entity;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import jakarta.persistence.*;
+import lombok.*;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "trainer")
 public class Trainer extends User {
 
-    private Long trainingTypeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_type_id", nullable = false)
+    private TrainingType trainingType;
 
 }

@@ -2,6 +2,7 @@ package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
 import com.example.learn_spring_core.entity.Trainer;
+import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.repository.TrainerRepository;
 import com.example.learn_spring_core.service.impl.TrainerServiceImpl;
 import org.junit.jupiter.api.Assertions;
@@ -41,7 +42,7 @@ class TrainerServiceTest extends TestsParent {
         Trainer trainer = new Trainer();
         trainer.setFirstName("John");
         trainer.setLastName("Doe");
-        trainer.setTrainingTypeId(1L);
+        trainer.setTrainingType(new TrainingType());
         when(trainerRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
 
         trainerService.create(trainer);

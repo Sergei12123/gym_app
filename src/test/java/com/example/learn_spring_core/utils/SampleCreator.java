@@ -5,7 +5,6 @@ import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
 import com.example.learn_spring_core.entity.TrainingType;
 
-import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +83,7 @@ public class SampleCreator {
             Trainer trainer = createSampleTrainer(setId);
             if (setId) {
                 trainer.setId((long) i);
-                trainer.setTrainingTypeId((long) i);
+                trainer.setTrainingType(new TrainingType());
             }
             result.add(trainer);
         }
@@ -109,9 +108,9 @@ public class SampleCreator {
             Training training = createSampleTraining(setId);
             if (setId) {
                 training.setId((long) i);
-                training.setTrainingTypeId((long) i);
-                training.setTraineeId((long) i);
-                training.setTrainerId((long) i);
+                training.setTrainingType(new TrainingType());
+                training.setTrainee(new Trainee());
+                training.setTrainer(new Trainer());
             }
             result.add(training);
         }

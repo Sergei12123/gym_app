@@ -25,16 +25,16 @@ class TrainingRepositoryTest extends BaseRepositoryTest {
     private void setAllForeignKeys(Training sampleTraining) {
         TrainingType trainingType = createSampleTrainingType(false);
         trainingTypeRepository.save(trainingType);
-        sampleTraining.setTrainingTypeId(trainingType.getId());
+        sampleTraining.setTrainingType(trainingType);
 
         Trainer trainer = createSampleTrainer(false);
-        trainer.setTrainingTypeId(trainingType.getId());
+        trainer.setTrainingType(trainingType);
         trainerRepository.save(trainer);
-        sampleTraining.setTrainerId(trainer.getId());
+        sampleTraining.setTrainer(trainer);
 
         Trainee trainee = createSampleTrainee(false);
         traineeRepository.save(trainee);
-        sampleTraining.setTraineeId(trainee.getId());
+        sampleTraining.setTrainee(trainee);
     }
 
     @Test

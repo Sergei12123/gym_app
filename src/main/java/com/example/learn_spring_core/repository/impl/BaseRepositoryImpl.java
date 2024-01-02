@@ -4,28 +4,24 @@ import com.example.learn_spring_core.component.KeyHolderGenerator;
 import com.example.learn_spring_core.entity.BaseEntity;
 import com.example.learn_spring_core.exception.InitializeDbException;
 import com.example.learn_spring_core.repository.BaseRepository;
-import com.example.learn_spring_core.utils.StringCaseUtil;
-import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
+import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
+
+@Repository
+@Transactional(propagation = REQUIRES_NEW)
 public abstract class BaseRepositoryImpl<T extends BaseEntity> implements BaseRepository<T> {
-
-    protected JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     protected KeyHolderGenerator keyHolderGenerator;
 
     @Autowired
@@ -33,36 +29,56 @@ public abstract class BaseRepositoryImpl<T extends BaseEntity> implements BaseRe
         this.keyHolderGenerator = keyHolderGenerator;
     }
 
+    protected SessionFactory sessionFactory;
+
+    @Autowired
+    public void setSessionFactory(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
     public void initializeDb(final String pathToScript) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(pathToScript))) {
-            StringBuilder script = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                script.append(line).append("\n");
+        try (Session session = sessionFactory.openSession()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(pathToScript))) {
+                StringBuilder script = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    script.append(line).append("\n");
+                }
+                Transaction transaction = session.beginTransaction();
+                session.createNativeMutationQuery(script.toString()).executeUpdate();
+                transaction.commit();
+            } catch (IOException e) {
+                throw new InitializeDbException(e);
             }
-            Arrays.stream(script.toString().split(";")).filter(StringUtils::isNotBlank).forEach(jdbcTemplate::execute);
-        } catch (IOException e) {
-            throw new InitializeDbException(e);
         }
+
+
     }
 
     public List<T> findAll() {
-        String sql = "SELECT * FROM " + StringCaseUtil.convertToSnakeCase(getEntityClass().getSimpleName());
-        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(getEntityClass()));
-    }
-
-    public T getById(final Long id) {
-        String sql = "SELECT * FROM " + StringCaseUtil.convertToSnakeCase(getEntityClass().getSimpleName()) + " WHERE id = " + id;
-        try {
-            return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(getEntityClass()));
-        } catch (EmptyResultDataAccessException exception){
-            return null;
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM " + getEntityClass().getName();
+            Query query = session.createQuery(hql);
+            return query.getResultList();
         }
     }
 
-    public void deleteById(final Long id) {
-        String sql = "DELETE FROM " + StringCaseUtil.convertToSnakeCase(getEntityClass().getSimpleName()) + " WHERE id = ?";
-        jdbcTemplate.update(sql, id);
+    @Transactional(propagation = REQUIRES_NEW)
+    public T getById(final Long id) {
+        return sessionFactory.getCurrentSession().get(getEntityClass(), id);
     }
 
+    public void deleteById(final Long id) {
+        final T entity = getById(id);
+        sessionFactory.getCurrentSession().remove(entity);
+    }
+
+    public T save(T entity) {
+        sessionFactory.getCurrentSession().persist(entity);
+        return entity;
+    }
+
+    public void update(T entity) {
+        sessionFactory.getCurrentSession().merge(entity);
+    }
 }

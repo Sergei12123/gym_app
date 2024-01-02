@@ -1,12 +1,22 @@
 package com.example.learn_spring_core.entity;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.*;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
+
+
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "training_type")
 public class TrainingType extends BaseEntity {
 
+    @Column(name = "training_type_name")
     private String trainingTypeName;
 
 }
