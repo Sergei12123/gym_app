@@ -9,9 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Transactional
 public abstract class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
 
     protected static final Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
@@ -24,20 +26,12 @@ public abstract class BaseServiceImpl<T extends BaseEntity> implements BaseServi
 
     public T getById(Long entityId) {
         logger.info("Get an entity {} with id = {}", getCurrentEntityName(), entityId);
-        return currentRepository.getById(entityId);
+        return currentRepository.findById(entityId).orElse(null);
     }
 
     public List<T> findAll() {
         logger.info("Get all entities {}", getCurrentEntityName());
         return currentRepository.findAll();
-    }
-
-    public T create(T entity) {
-        logger.info("Create entity {}", getCurrentEntityName());
-        logEntityObject(entity);
-        currentRepository.save(entity);
-        logger.info("Entity {} successfully saved with id = {}", getCurrentEntityName(), entity.getId());
-        return entity;
     }
 
     public void logEntityObject(T entity) {
@@ -47,9 +41,5 @@ public abstract class BaseServiceImpl<T extends BaseEntity> implements BaseServi
         } catch (JsonProcessingException e) {
             throw new EntityToJsonSerializeException(e);
         }
-    }
-
-    public String getCurrentEntityName() {
-        return currentRepository.getEntityClass().getSimpleName();
     }
 }

@@ -4,27 +4,20 @@ import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
 import com.example.learn_spring_core.entity.TrainingType;
+import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class SampleCreator {
-
-    public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     public static TrainingType createSampleTrainingType(final boolean setId) {
         TrainingType trainingType = new TrainingType();
         if (setId) {
             trainingType.setId(1L);
         }
-        StringBuilder name = new StringBuilder();
-        for (int i = 0; i < 5; i++) {
-            int randomIndex = new Random().nextInt(CHARACTERS.length());
-            name.append(CHARACTERS.charAt(randomIndex));
-        }
-        trainingType.setTrainingTypeName(name.toString());
+        trainingType.setTrainingTypeName(TrainingTypeName.CARDIO);
         return trainingType;
     }
 

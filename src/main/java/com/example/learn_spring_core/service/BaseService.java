@@ -10,8 +10,6 @@ public interface BaseService<T extends BaseEntity> {
 
     List<T> findAll();
 
-    T create(T entity);
-
     void logEntityObject(T entity);
 
     String getCurrentEntityName();

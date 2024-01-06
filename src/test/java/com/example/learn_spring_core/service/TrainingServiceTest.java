@@ -10,9 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTraining;
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainings;
@@ -29,7 +28,6 @@ class TrainingServiceTest extends TestsParent {
 
     @BeforeEach
     void setUp() {
-        when(trainingRepository.getEntityClass()).thenReturn(Training.class); // Set the entity class to Training
         when(trainingRepository.save(any(Training.class))).thenAnswer(invocation -> {
             Training trainingArgument = invocation.getArgument(0);
             trainingArgument.setId(1L);
@@ -61,12 +59,12 @@ class TrainingServiceTest extends TestsParent {
     void testGetTrainingById() {
         Long trainingId = 1L;
         Training training = createSampleTraining(true);
-        when(trainingRepository.getById(trainingId)).thenReturn(training);
+        when(trainingRepository.findById(trainingId)).thenReturn(Optional.of(training));
 
         Training retrievedTraining = trainingService.getById(trainingId);
 
         assertEquals(training, retrievedTraining);
-        verify(trainingRepository, times(1)).getById(trainingId);
+        verify(trainingRepository, times(1)).findById(trainingId);
     }
 
 }

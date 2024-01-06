@@ -2,16 +2,17 @@ package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
 import com.example.learn_spring_core.entity.TrainingType;
+import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 import com.example.learn_spring_core.repository.TrainingTypeRepository;
 import com.example.learn_spring_core.service.impl.TrainingTypeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainingType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,7 +28,6 @@ class TrainingTypeServiceTest extends TestsParent {
 
     @BeforeEach
     void setUp() {
-        when(trainingTypeRepository.getEntityClass()).thenReturn(TrainingType.class); // Set the entity class to TrainingType
         when(trainingTypeRepository.save(any(TrainingType.class))).thenAnswer(invocation -> {
             TrainingType trainingTypeArgument = invocation.getArgument(0);
             trainingTypeArgument.setId(1L);
@@ -36,21 +36,11 @@ class TrainingTypeServiceTest extends TestsParent {
     }
 
     @Test
-    void testCreateTrainingType() {
-        TrainingType trainingType = new TrainingType();
-        trainingType.setTrainingTypeName("Base trainingType");
-
-        trainingTypeService.create(trainingType);
-
-        Mockito.verify(trainingTypeRepository, times(1)).save(Mockito.any(TrainingType.class));
-    }
-
-    @Test
     void testFindAllTrainingTypes() {
         TrainingType trainingType1 = createSampleTrainingType(true);
         TrainingType trainingType2 = new TrainingType();
         trainingType2.setId(2L);
-        trainingType2.setTrainingTypeName("Base trainingType 2");
+        trainingType2.setTrainingTypeName(TrainingTypeName.FLEXIBILITY);
         List<TrainingType> trainingTypes = Arrays.asList(trainingType1, trainingType2);
         when(trainingTypeRepository.findAll()).thenReturn(trainingTypes);
 
@@ -64,12 +54,12 @@ class TrainingTypeServiceTest extends TestsParent {
     void testGetTrainingTypeById() {
         Long trainingTypeId = 1L;
         TrainingType trainingType = createSampleTrainingType(true);
-        when(trainingTypeRepository.getById(trainingTypeId)).thenReturn(trainingType);
+        when(trainingTypeRepository.findById(trainingTypeId)).thenReturn(Optional.of(trainingType));
 
         TrainingType retrievedTrainingType = trainingTypeService.getById(trainingTypeId);
 
         assertEquals(trainingType, retrievedTrainingType);
-        verify(trainingTypeRepository, times(1)).getById(trainingTypeId);
+        verify(trainingTypeRepository, times(1)).findById(trainingTypeId);
     }
 
 }

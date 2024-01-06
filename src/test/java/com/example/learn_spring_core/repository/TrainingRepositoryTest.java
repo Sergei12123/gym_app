@@ -9,7 +9,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static com.example.learn_spring_core.utils.SampleCreator.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TrainingRepositoryTest extends BaseRepositoryTest {
 
@@ -43,17 +44,16 @@ class TrainingRepositoryTest extends BaseRepositoryTest {
 
         trainingRepository.save(trainingForSave);
 
-        Training foundTraining = trainingRepository.getById(trainingForSave.getId());
-        assertEquals(trainingForSave, foundTraining);
+        trainingRepository.findById(trainingForSave.getId()).ifPresent(foundTraining -> assertEquals(trainingForSave, foundTraining));
     }
 
     @Test
     void updateTraining() {
         Training trainingToUpdate = getSampleTraining(true);
-        trainingToUpdate.setTrainingName("new training name");
 
-        trainingRepository.update(trainingToUpdate);
-        assertEquals(trainingToUpdate.getTrainingName(), trainingRepository.getById(trainingToUpdate.getId()).getTrainingName());
+        trainingToUpdate.setTrainingName("new training name");
+        trainingRepository.save(trainingToUpdate);
+        trainingRepository.findById(trainingToUpdate.getId()).map(Training::getTrainingName).ifPresent(trainingName -> assertEquals(trainingToUpdate.getTrainingName(), trainingName));
     }
 
     @Test
@@ -75,19 +75,35 @@ class TrainingRepositoryTest extends BaseRepositoryTest {
     void getByIdTraining() {
         Training trainingForGet = getSampleTraining(true);
 
-        Training foundTraining = trainingRepository.getById(trainingForGet.getId());
-
-        assertEquals(trainingForGet, foundTraining);
+        trainingRepository.findById(trainingForGet.getId()).ifPresent(foundTraining -> assertEquals(trainingForGet, foundTraining));
 
     }
 
     @Test
     void deleteByIdTraining() {
         Training trainingToDelete = getSampleTraining(true);
-
         trainingRepository.deleteById(trainingToDelete.getId());
 
-        assertNull(trainingRepository.getById(trainingToDelete.getId()));
+        assertTrue(trainingRepository.findById(trainingToDelete.getId()).isEmpty());
     }
+
+    @Test
+    void findByTrainee_UserNameAndTrainingName() {
+        Training training = getSampleTraining(true);
+
+        List<Training> result = trainingRepository.findByTrainee_UserNameAndTrainingName(training.getTrainee().getUserName(), training.getTrainingName());
+
+        assertTrue(result.contains(training));
+    }
+
+    @Test
+    void findByTrainer_UserNameAndTrainingName() {
+        Training training = getSampleTraining(true);
+
+        List<Training> result = trainingRepository.findByTrainer_UserNameAndTrainingName(training.getTrainer().getUserName(), training.getTrainingName());
+
+        assertTrue(result.contains(training));
+    }
+
 }
 

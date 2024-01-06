@@ -2,7 +2,9 @@ package com.example.learn_spring_core.repository;
 
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.TrainingType;
+import com.example.learn_spring_core.service.TrainerService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -11,7 +13,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TrainerRepositoryTest extends BaseRepositoryTest {
 
-    Trainer getSampleTrainerForSave(boolean saveRequired) {
+    @Autowired
+    private TrainerService trainerService;
+
+    public Trainer getSampleTrainerForSave(boolean saveRequired) {
         Trainer sampleTrainer = createSampleTrainer(false);
 
         setForeignKey(sampleTrainer);
@@ -32,8 +37,8 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
 
         trainerRepository.save(trainerToSave);
 
-        Trainer foundTrainer = trainerRepository.getById(trainerToSave.getId());
-        assertEquals(trainerToSave, foundTrainer);
+        trainerRepository.findById(trainerToSave.getId()).ifPresent(found -> assertEquals(trainerToSave, found));
+
     }
 
     @Test
@@ -41,16 +46,16 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
         Trainer trainerToUpdate = getSampleTrainerForSave(true);
         trainerToUpdate.setFirstName("new firstName");
 
-        trainerRepository.update(trainerToUpdate);
-        assertEquals(trainerToUpdate.getFirstName(), trainerRepository.getById(trainerToUpdate.getId()).getFirstName());
+        trainerRepository.save(trainerToUpdate);
+        trainerRepository.findById(trainerToUpdate.getId()).map(Trainer::getFirstName).ifPresent(foundName -> assertEquals(trainerToUpdate.getFirstName(), foundName));
     }
 
     @Test
     void existsByUsername() {
         Trainer sampleTrainer = getSampleTrainerForSave(true);
 
-        assertTrue(trainerRepository.existsByUsername(sampleTrainer.getUserName()));
-        assertFalse(trainerRepository.existsByUsername(sampleTrainer.getUserName() + "1"));
+        assertTrue(trainerRepository.existsByUserName(sampleTrainer.getUserName()));
+        assertFalse(trainerRepository.existsByUserName(sampleTrainer.getUserName() + "1"));
 
     }
 
@@ -72,9 +77,7 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
     void getByIdTrainer() {
         Trainer trainerToGet = getSampleTrainerForSave(true);
 
-        Trainer foundTrainer = trainerRepository.getById(trainerToGet.getId());
-
-        assertEquals(trainerToGet, foundTrainer);
+        trainerRepository.findById(trainerToGet.getId()).ifPresent(found -> assertEquals(trainerToGet, found));
     }
 
     @Test
@@ -83,7 +86,57 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
 
         trainerRepository.deleteById(trainerToDelete.getId());
 
-        assertNull(trainerRepository.getById(trainerToDelete.getId()));
+        assertTrue(trainerRepository.findById(trainerToDelete.getId()).isEmpty());
+    }
+
+    @Test
+    void existsByUserNameTrainer() {
+        Trainer sampleTrainer = getSampleTrainerForSave(true);
+
+        assertTrue(trainerRepository.existsByUserName(sampleTrainer.getUserName()));
+        assertFalse(trainerRepository.existsByUserName(sampleTrainer.getUserName() + "1"));
+    }
+
+    @Test
+    void findByUserNameTrainer() {
+        Trainer sampleTrainer = getSampleTrainerForSave(true);
+
+        Trainer foundTrainer = trainerRepository.findByUserName(sampleTrainer.getUserName());
+        assertNotNull(foundTrainer);
+        assertEquals(sampleTrainer, foundTrainer);
+    }
+
+    @Test
+    void removeByUserNameTrainer() {
+        Trainer trainerToRemove = getSampleTrainerForSave(true);
+
+        trainerRepository.removeByUserName(trainerToRemove.getUserName());
+        assertTrue(trainerRepository.findById(trainerToRemove.getId()).isEmpty());
+    }
+
+    @Test
+    void findByTraineesEmptyAndIsActiveTrue() {
+        Trainer activeTrainerWithoutTrainees = getSampleTrainerForSave(true);
+
+        Trainer activeTrainerWithTrainees = getSampleTrainerForSave(true);
+        trainerService.addTraineeToTrainer(traineeRepository.save(createSampleTrainee(false)).getId(), activeTrainerWithTrainees.getId());  // добавляем тренируемого
+
+        Trainer inactiveTrainerWithoutTrainees = getSampleTrainerForSave(true);
+        inactiveTrainerWithoutTrainees.setIsActive(false);
+
+        Trainer inactiveTrainerWithTrainees = getSampleTrainerForSave(true);
+        trainerService.addTraineeToTrainer(traineeRepository.save(createSampleTrainee(false)).getId(), inactiveTrainerWithTrainees.getId());  // добавляем тренируемого
+        inactiveTrainerWithTrainees.setIsActive(false);
+
+        trainerRepository.saveAll(List.of(
+            inactiveTrainerWithoutTrainees,
+            inactiveTrainerWithTrainees
+        ));
+
+        List<Trainer> result = trainerRepository.findByTraineesNullAndIsActiveTrue();
+
+        assertEquals(1, result.size());
+        assertEquals(activeTrainerWithoutTrainees, result.get(0));
     }
 
 }

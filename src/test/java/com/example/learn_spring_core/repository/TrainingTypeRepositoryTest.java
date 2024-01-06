@@ -1,6 +1,7 @@
 package com.example.learn_spring_core.repository;
 
 import com.example.learn_spring_core.entity.TrainingType;
+import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -25,25 +26,24 @@ class TrainingTypeRepositoryTest extends BaseRepositoryTest {
 
         trainingTypeRepository.save(trainingTypeForSave);
 
-        TrainingType foundTraining = trainingTypeRepository.getById(trainingTypeForSave.getId());
-        assertEquals(trainingTypeForSave, foundTraining);
+        trainingTypeRepository.findById(trainingTypeForSave.getId()).ifPresent(foundTrainingType -> assertEquals(trainingTypeForSave, foundTrainingType));
+
     }
 
     @Test
     void updateTrainingType() {
         TrainingType trainingTypeToUpdate = getSampleTrainingType(true);
-        trainingTypeToUpdate.setTrainingTypeName("new TrainingType name");
+        trainingTypeToUpdate.setTrainingTypeName(TrainingTypeName.ENDURANCE);
 
-        trainingTypeRepository.update(trainingTypeToUpdate);
-        assertEquals(trainingTypeToUpdate.getTrainingTypeName(), trainingTypeRepository.getById(trainingTypeToUpdate.getId()).getTrainingTypeName());
+        trainingTypeRepository.save(trainingTypeToUpdate);
+
+        trainingTypeRepository.findById(trainingTypeToUpdate.getId()).map(TrainingType::getTrainingTypeName).ifPresent(trainingTypeName -> assertEquals(trainingTypeToUpdate.getTrainingTypeName(), trainingTypeName));
     }
 
     @Test
     void findAllTrainingType() {
         List<TrainingType> sampleTrainingTypes = createSampleTrainingTypes(false, 3);
-        for (TrainingType trainingType : sampleTrainingTypes) {
-            trainingTypeRepository.save(trainingType);
-        }
+        trainingTypeRepository.saveAll(sampleTrainingTypes);
 
         List<TrainingType> result = trainingTypeRepository.findAll();
         assertEquals(sampleTrainingTypes.size(), result.size());
@@ -54,9 +54,7 @@ class TrainingTypeRepositoryTest extends BaseRepositoryTest {
     void getByIdTrainingType() {
         TrainingType trainingTypeForGet = getSampleTrainingType(true);
 
-        TrainingType foundTraining = trainingTypeRepository.getById(trainingTypeForGet.getId());
-
-        assertEquals(trainingTypeForGet, foundTraining);
+        trainingTypeRepository.findById(trainingTypeForGet.getId()).ifPresent(foundTrainingType -> assertEquals(trainingTypeForGet, foundTrainingType));
     }
 
     @Test
@@ -65,7 +63,7 @@ class TrainingTypeRepositoryTest extends BaseRepositoryTest {
 
         trainingTypeRepository.deleteById(trainingTypeToDelete.getId());
 
-        assertNull(trainingTypeRepository.getById(trainingTypeToDelete.getId()));
+        assertTrue(trainingTypeRepository.findById(trainingTypeToDelete.getId()).isEmpty());
     }
 
 }

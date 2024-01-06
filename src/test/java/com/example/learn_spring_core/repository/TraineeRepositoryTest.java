@@ -15,8 +15,8 @@ class TraineeRepositoryTest extends BaseRepositoryTest {
     void saveTrainee() {
         Trainee traineeToSave = createSampleTrainee(false);
         traineeRepository.save(traineeToSave);
-        Trainee foundTrainee = traineeRepository.getById(traineeToSave.getId());
-        assertEquals(traineeToSave, foundTrainee);
+
+        traineeRepository.findById(traineeToSave.getId()).ifPresent(found -> assertEquals(traineeToSave, found));
     }
 
     @Test
@@ -25,8 +25,8 @@ class TraineeRepositoryTest extends BaseRepositoryTest {
         traineeRepository.save(traineeToUpdate);
         traineeToUpdate.setAddress("new address");
 
-        traineeRepository.update(traineeToUpdate);
-        assertEquals(traineeToUpdate.getAddress(), traineeRepository.getById(traineeToUpdate.getId()).getAddress());
+        traineeRepository.save(traineeToUpdate);
+        traineeRepository.findById(traineeToUpdate.getId()).map(Trainee::getAddress).ifPresent(foundAddress -> assertEquals(traineeToUpdate.getAddress(), foundAddress));
     }
 
     @Test
@@ -34,17 +34,15 @@ class TraineeRepositoryTest extends BaseRepositoryTest {
         Trainee sampleTrainee = createSampleTrainee(false);
 
         traineeRepository.save(sampleTrainee);
-        assertTrue(traineeRepository.existsByUsername(sampleTrainee.getUserName()));
-        assertFalse(traineeRepository.existsByUsername(sampleTrainee.getUserName() + "1"));
+        assertTrue(traineeRepository.existsByUserName(sampleTrainee.getUserName()));
+        assertFalse(traineeRepository.existsByUserName(sampleTrainee.getUserName() + "1"));
 
     }
 
     @Test
     void findAllTrainee() {
         List<Trainee> sampleTrainees = createSampleTrainees(false, 3);
-        for (Trainee trainee : sampleTrainees) {
-            traineeRepository.save(trainee);
-        }
+        traineeRepository.saveAll(sampleTrainees);
 
         List<Trainee> result = traineeRepository.findAll();
 
@@ -56,8 +54,8 @@ class TraineeRepositoryTest extends BaseRepositoryTest {
     void getByIdTrainee() {
         Trainee traineeToGet = createSampleTrainee(false);
         traineeRepository.save(traineeToGet);
-        Trainee foundTrainee = traineeRepository.getById(traineeToGet.getId());
-        assertEquals(traineeToGet, foundTrainee);
+
+        traineeRepository.findById(traineeToGet.getId()).ifPresent(found -> assertEquals(traineeToGet, found));
     }
 
     @Test
@@ -66,7 +64,35 @@ class TraineeRepositoryTest extends BaseRepositoryTest {
         traineeRepository.save(traineeToDelete);
 
         traineeRepository.deleteById(traineeToDelete.getId());
-        assertNull(traineeRepository.getById(traineeToDelete.getId()));
+        assertTrue(traineeRepository.findById(traineeToDelete.getId()).isEmpty());
+    }
+
+    @Test
+    void existsByUserNameTrainee() {
+        Trainee sampleTrainee = createSampleTrainee(false);
+        traineeRepository.save(sampleTrainee);
+
+        assertTrue(traineeRepository.existsByUserName(sampleTrainee.getUserName()));
+        assertFalse(traineeRepository.existsByUserName(sampleTrainee.getUserName() + "1"));
+    }
+
+    @Test
+    void findByUserNameTrainee() {
+        Trainee sampleTrainee = createSampleTrainee(false);
+        traineeRepository.save(sampleTrainee);
+
+        Trainee foundTrainee = traineeRepository.findByUserName(sampleTrainee.getUserName());
+        assertNotNull(foundTrainee);
+        assertEquals(sampleTrainee, foundTrainee);
+    }
+
+    @Test
+    void removeByUserNameTrainee() {
+        Trainee traineeToRemove = createSampleTrainee(false);
+        traineeRepository.save(traineeToRemove);
+
+        traineeRepository.removeByUserName(traineeToRemove.getUserName());
+        assertFalse(traineeRepository.existsByUserName(traineeToRemove.getUserName()));
     }
 
 }

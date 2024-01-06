@@ -1,28 +1,30 @@
 package com.example.learn_spring_core.configuration;
 
-import com.example.learn_spring_core.entity.Trainee;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.hibernate.SessionFactory;
+import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.orm.hibernate5.HibernateTemplate;
-import org.springframework.orm.hibernate5.HibernateTransactionManager;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.Database;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.util.Objects;
-import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
 @ComponentScan(basePackages = "com.example")
 @PropertySource("classpath:application.properties")
+@EnableJpaRepositories("com.example.learn_spring_core.repository")
 public class AppConfig {
 
     @Value("${db.url}")
@@ -60,29 +62,22 @@ public class AppConfig {
     }
 
     @Bean
-    public LocalSessionFactoryBean sessionFactory() {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan("com.example.learn_spring_core.entity");
-        sessionFactory.setHibernateProperties(hibernateProperties());
-        return sessionFactory;
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setDatabase(Database.MYSQL);
+        vendorAdapter.setShowSql(true);
+        vendorAdapter.setGenerateDdl(true);
+
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        factory.setJpaVendorAdapter(vendorAdapter);
+        factory.setPackagesToScan("com.example.learn_spring_core.entity");
+        factory.setDataSource(dataSource());
+        return factory;
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager() {
-        HibernateTransactionManager transactionManager = new HibernateTransactionManager();
-        transactionManager.setSessionFactory(sessionFactory().getObject());
-        return transactionManager;
+    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
     }
-
-    private Properties hibernateProperties() {
-        Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-        return hibernateProperties;
-    }
-
-
-
-
 
 }

@@ -1,10 +1,6 @@
 package com.example.learn_spring_core.repository;
 
 import com.example.learn_spring_core.configuration.AppConfig;
-import com.example.learn_spring_core.entity.Trainee;
-import com.example.learn_spring_core.entity.Trainer;
-import com.example.learn_spring_core.entity.Training;
-import com.example.learn_spring_core.entity.TrainingType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +30,9 @@ abstract class BaseRepositoryTest {
 
     @AfterEach
     void tearDown() {
-        trainingRepository.findAll().stream().map(Training::getId).forEach(trainingRepository::deleteById);
-        trainerRepository.findAll().stream().map(Trainer::getId).forEach(trainerRepository::deleteById);
-        trainingTypeRepository.findAll().stream().map(TrainingType::getId).forEach(trainingTypeRepository::deleteById);
-        traineeRepository.findAll().stream().map(Trainee::getId).forEach(traineeRepository::deleteById);
+        trainerRepository.deleteAllInBatch();
+        traineeRepository.deleteAllInBatch();
+        trainingRepository.deleteAllInBatch();
     }
 
 }

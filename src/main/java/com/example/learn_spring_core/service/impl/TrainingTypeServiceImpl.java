@@ -7,5 +7,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class TrainingTypeServiceImpl extends BaseServiceImpl<TrainingType> implements TrainingTypeService {
 
+    @Override
+    public String getCurrentEntityName() {
+        return TrainingType.class.getSimpleName();
+    }
+
 }
 

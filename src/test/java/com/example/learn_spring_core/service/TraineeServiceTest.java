@@ -2,7 +2,10 @@ package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
 import com.example.learn_spring_core.entity.Trainee;
+import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.repository.TraineeRepository;
+import com.example.learn_spring_core.repository.TrainerRepository;
+import com.example.learn_spring_core.repository.UserRepository;
 import com.example.learn_spring_core.service.impl.TraineeServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +14,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainee;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,17 +29,28 @@ class TraineeServiceTest extends TestsParent {
     @Mock
     private TraineeRepository traineeRepository;
 
+    @Mock
+    private TrainerRepository trainerRepository;
+
     @InjectMocks
     private TraineeServiceImpl traineeService;
 
     @BeforeEach
-    void setUp() {
-        when(traineeRepository.getEntityClass()).thenReturn(Trainee.class); // Set the entity class to Trainer
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
+        Field hack = TraineeServiceImpl.class.getSuperclass().getSuperclass().getDeclaredField("currentRepository");
+        hack.setAccessible(true);
+        hack.set(traineeService, traineeRepository);
         when(traineeRepository.save(any(Trainee.class))).thenAnswer(invocation -> {
             Trainee traineeArgument = invocation.getArgument(0);
             traineeArgument.setId(1L);
             return traineeArgument;
         });
+        when(trainerRepository.save(any(Trainer.class))).thenAnswer(invocation -> {
+            Trainer trainerArgument = invocation.getArgument(0);
+            trainerArgument.setId(1L);
+            return trainerArgument;
+        });
+
     }
 
     @Test
@@ -46,7 +62,7 @@ class TraineeServiceTest extends TestsParent {
         trainee.setDateOfBirth(LocalDate.of(1990, 1, 1));
         trainee.setAddress("123 Main St");
 
-        when(traineeRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
+        when(traineeRepository.existsByUserName(Mockito.anyString())).thenReturn(false);
 
         traineeService.create(trainee);
         Mockito.verify(traineeRepository, times(1)).save(Mockito.any(Trainee.class));
@@ -73,7 +89,7 @@ class TraineeServiceTest extends TestsParent {
         trainee2.setDateOfBirth(LocalDate.of(1985, 8, 22));
         trainee2.setAddress("456 Oak St");
         trainee2.setUserName("alice.smith");
-        trainee2.setPassword("securepass");
+        trainee2.setPassword("secure-pass");
         trainee2.setIsActive(true);
 
         List<Trainee> trainees = Arrays.asList(trainee1, trainee2);
@@ -90,23 +106,23 @@ class TraineeServiceTest extends TestsParent {
         Long traineeId = 1L;
         Trainee trainee = createSampleTrainee(true);
 
-        when(traineeRepository.getById(traineeId)).thenReturn(trainee);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(trainee));
 
         Trainee retrievedTrainee = traineeService.getById(traineeId);
 
         assertEquals(trainee, retrievedTrainee);
-        verify(traineeRepository, times(1)).getById(traineeId);
+        verify(traineeRepository, times(1)).findById(traineeId);
     }
 
     @Test
     void testUpdateTrainee() {
         Long traineeId = 1L;
         Trainee sampleTrainee = createSampleTrainee(true);
-        when(traineeRepository.getById(traineeId)).thenReturn(sampleTrainee);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(sampleTrainee));
 
         traineeService.update(sampleTrainee);
 
-        verify(traineeRepository, times(1)).update(any(Trainee.class));
+        verify(traineeRepository, times(1)).save(any(Trainee.class));
     }
 
     @Test
@@ -116,18 +132,18 @@ class TraineeServiceTest extends TestsParent {
         String expectedUserName = "John.Doe";
         String expectedUserName1 = "John.Doe1";
 
-        when(traineeRepository.existsByUsername(expectedUserName)).thenReturn(false);
+        when(traineeRepository.existsByUserName(expectedUserName)).thenReturn(false);
         String result = traineeService.generateUsername(firstName, lastName);
         Assertions.assertEquals(expectedUserName, result);
-        verify(traineeRepository, times(1)).existsByUsername(anyString());
+        verify(traineeRepository, times(1)).existsByUserName(anyString());
 
 
-        when(traineeRepository.existsByUsername(expectedUserName)).thenReturn(true);
-        when(traineeRepository.existsByUsername(expectedUserName1)).thenReturn(false);
+        when(traineeRepository.existsByUserName(expectedUserName)).thenReturn(true);
+        when(traineeRepository.existsByUserName(expectedUserName1)).thenReturn(false);
 
         String result2 = traineeService.generateUsername(firstName, lastName);
         Assertions.assertEquals(expectedUserName1, result2);
-        verify(traineeRepository, times(3)).existsByUsername(anyString());
+        verify(((UserRepository<?>) traineeRepository), times(3)).existsByUserName(anyString());
 
     }
 
@@ -140,6 +156,72 @@ class TraineeServiceTest extends TestsParent {
                 Assertions.assertTrue(Character.isLetterOrDigit(ch));
             }
         }
+    }
+
+    @Test
+    void testChangePassword() {
+        Long traineeId = 1L;
+        Trainee sampleTrainee = createSampleTrainee(true);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(sampleTrainee));
+        traineeService.changePassword(traineeId, "newPassword");
+        Assertions.assertEquals("newPassword", sampleTrainee.getPassword());
+    }
+
+    @Test
+    void testActivate() {
+        Long traineeId = 1L;
+        Trainee sampleTrainee = createSampleTrainee(true);
+        sampleTrainee.setIsActive(false);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(sampleTrainee));
+        traineeService.activate(traineeId);
+        Assertions.assertTrue(sampleTrainee.getIsActive());
+    }
+
+    @Test
+    void testDeactivate() {
+        Long traineeId = 1L;
+        Trainee sampleTrainee = createSampleTrainee(true);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(sampleTrainee));
+        traineeService.deactivate(traineeId);
+        Assertions.assertFalse(sampleTrainee.getIsActive());
+    }
+
+    @Test
+    void testAddTrainerToTrainee() {
+        Trainee trainee = new Trainee();
+        trainee.setId(1L);
+
+        Trainer trainer = new Trainer();
+        trainer.setId(2L);
+
+        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer));
+        when(traineeRepository.save(trainee)).thenAnswer(invocationOnMock -> {
+            Trainee trainee1 = invocationOnMock.getArgument(0);
+            trainee1.getTrainers().add(trainer);
+            return trainee1;
+        });
+        when(traineeRepository.findById(1L)).thenReturn(Optional.of(trainee));
+
+        traineeService.addTrainerToTrainee(2L, 1L);
+
+        Assertions.assertTrue(trainee.getTrainers().contains(trainer));
+    }
+
+    @Test
+    void testRemoveTrainerFromTrainee() {
+        Trainee trainee = new Trainee();
+        trainee.setId(1L);
+
+        Trainer trainer = new Trainer();
+        trainer.setId(2L);
+
+        trainee.getTrainers().add(trainer);
+
+        when(traineeRepository.findById(1L)).thenReturn(Optional.of(trainee));
+
+        traineeService.removeTrainerFromTrainee(1L, 2L);
+
+        Assertions.assertTrue(trainee.getTrainers().isEmpty());
     }
 
 }
