@@ -132,18 +132,16 @@ class TraineeServiceTest extends TestsParent {
         String expectedUserName = "John.Doe";
         String expectedUserName1 = "John.Doe1";
 
-        when(traineeRepository.existsByUserName(expectedUserName)).thenReturn(false);
+        when(traineeRepository.countByFirstNameAndLastName(firstName, lastName)).thenReturn(0L);
         String result = traineeService.generateUsername(firstName, lastName);
         Assertions.assertEquals(expectedUserName, result);
-        verify(traineeRepository, times(1)).existsByUserName(anyString());
+        verify(traineeRepository, times(1)).countByFirstNameAndLastName(firstName, lastName);
 
 
-        when(traineeRepository.existsByUserName(expectedUserName)).thenReturn(true);
-        when(traineeRepository.existsByUserName(expectedUserName1)).thenReturn(false);
-
+        when(traineeRepository.countByFirstNameAndLastName(firstName, lastName)).thenReturn(1L);
         String result2 = traineeService.generateUsername(firstName, lastName);
         Assertions.assertEquals(expectedUserName1, result2);
-        verify(((UserRepository<?>) traineeRepository), times(3)).existsByUserName(anyString());
+        verify(((UserRepository<?>) traineeRepository), times(2)).countByFirstNameAndLastName(firstName, lastName);
 
     }
 

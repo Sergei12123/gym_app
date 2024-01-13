@@ -10,6 +10,8 @@ public interface UserRepository<T extends User> extends BaseRepository<T> {
 
     boolean existsByUserName(String userName);
 
+    Long countByFirstNameAndLastName(String firstName, String lastName);
+
     T findByUserName(String userName);
 
     @Modifying

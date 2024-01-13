@@ -20,13 +20,8 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
 
     public String generateUsername(String firstName, String lastName) {
         String baseUsername = firstName + "." + lastName;
-        String username = baseUsername;
-        int suffix = 1;
-
-        while (((UserRepository<?>) currentRepository).existsByUserName(username)) {
-            username = baseUsername + suffix;
-            suffix++;
-        }
+        Long suffix = ((UserRepository<?>) currentRepository).countByFirstNameAndLastName(firstName, lastName);
+        String username = baseUsername + (suffix > 0 ? String.valueOf(suffix) : "");
         logger.info("For the {} {} {}, has been generated the nickname {}", getCurrentEntityName(), firstName, lastName, username);
         return username;
     }
