@@ -29,6 +29,11 @@ public class TrainerServiceImpl extends UserServiceImpl<Trainer> implements Trai
     }
 
     @Override
+    public List<Trainer> getNotAssignedToConcreteTraineeActiveTrainers(String traineeUserName) {
+        return ((TrainerRepository) currentRepository).findByTrainees_UserNameNotContainingAndIsActiveTrue(traineeUserName);
+    }
+
+    @Override
     public void addTraineeToTrainer(Long traineeId, Long trainerId) {
         Trainer trainer = this.getById(trainerId);
         Trainee trainee = traineeRepository.findById(traineeId).orElse(null);

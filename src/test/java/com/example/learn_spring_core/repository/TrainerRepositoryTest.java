@@ -3,9 +3,11 @@ package com.example.learn_spring_core.repository;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.service.TrainerService;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.learn_spring_core.utils.SampleCreator.*;
@@ -15,6 +17,9 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
 
     @Autowired
     private TrainerService trainerService;
+
+    @Autowired
+    private EntityManager entityManager;
 
     public Trainer getSampleTrainerForSave(boolean saveRequired) {
         Trainer sampleTrainer = createSampleTrainer(false);
@@ -111,6 +116,8 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
         Trainer trainerToRemove = getSampleTrainerForSave(true);
 
         trainerRepository.removeByUserName(trainerToRemove.getUserName());
+        entityManager.flush();
+        entityManager.clear();
         assertTrue(trainerRepository.findById(trainerToRemove.getId()).isEmpty());
     }
 
@@ -137,6 +144,42 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
 
         assertEquals(1, result.size());
         assertEquals(activeTrainerWithoutTrainees, result.get(0));
+    }
+
+    @Test
+    void testCountByUserNameIsStartingWith() {
+        String prefix = "sample";
+        int count = 5;
+
+        List<Trainer> sampleTrainers = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            Trainer trainer = getSampleTrainerForSave(false);
+            trainer.setUserName(prefix + i);
+            sampleTrainers.add(trainer);
+        }
+
+        trainerRepository.saveAll(sampleTrainers);
+
+        long result = trainerRepository.countByUserNameStartsWith(prefix);
+        assertEquals(count, result);
+    }
+
+    @Test
+    void testExistsByUserNameAndPassword() {
+
+        Trainer sampleTrainer = getSampleTrainerForSave(true);
+
+        assertTrue(trainerRepository.existsByUserNameAndPassword(sampleTrainer.getUserName(), sampleTrainer.getPassword()));
+        assertFalse(trainerRepository.existsByUserNameAndPassword(sampleTrainer.getUserName(), "incorrectPassword"));
+    }
+
+    @Test
+    void testExistsByFirstNameAndLastNameAndIsActiveTrue() {
+        Trainer sampleTrainer = getSampleTrainerForSave(true);
+
+        assertTrue(trainerRepository.existsByFirstNameAndLastNameAndIsActiveTrue(sampleTrainer.getFirstName(), sampleTrainer.getLastName()));
+
+        assertFalse(trainerRepository.existsByFirstNameAndLastNameAndIsActiveTrue("IncorrectFirstName", "IncorrectLastName"));
     }
 
 }

@@ -12,4 +12,8 @@ public interface TrainingRepository extends BaseRepository<Training> {
 
     List<Training> findByTrainer_UserNameAndTrainingName(String trainerUserName, String trainingName);
 
+    List<Training> findByTrainee_UserName(String traineeUserName);
+
+    List<Training> findByTrainer_UserName(String trainerUserName);
+
 }

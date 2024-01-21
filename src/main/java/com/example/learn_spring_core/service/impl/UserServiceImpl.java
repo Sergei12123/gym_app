@@ -1,5 +1,6 @@
 package com.example.learn_spring_core.service.impl;
 
+import com.example.learn_spring_core.component.TransactionIdHolder;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
@@ -18,23 +19,24 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
 
     public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
+    @Override
     public String generateUsername(String firstName, String lastName) {
         String baseUsername = firstName + "." + lastName;
-        Long suffix = ((UserRepository<?>) currentRepository).countByFirstNameAndLastName(firstName, lastName);
+        Long suffix = ((UserRepository<?>) currentRepository).countByUserNameStartsWith(baseUsername);
         String username = baseUsername + (suffix > 0 ? String.valueOf(suffix) : "");
-        logger.info("For the {} {} {}, has been generated the nickname {}", getCurrentEntityName(), firstName, lastName, username);
+        logger.info("Transaction: {}. For the {} {} {}, has been generated the nickname {}", TransactionIdHolder.getTransactionId(), getCurrentEntityName(), firstName, lastName, username);
         return username;
     }
 
+    @Override
     public String generateRandomPassword() {
         StringBuilder password = new StringBuilder();
         SecureRandom random = new SecureRandom();
-
         for (int i = 0; i < 10; i++) {
             int randomIndex = random.nextInt(CHARACTERS.length());
             password.append(CHARACTERS.charAt(randomIndex));
         }
-        logger.info("Password was generated for the {}", getCurrentEntityName());
+        logger.info("Transaction: {}. Password was generated for the {}", TransactionIdHolder.getTransactionId(), getCurrentEntityName());
         return password.toString();
     }
 
@@ -71,18 +73,23 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
         user.setUserName(generateUsername(user.getFirstName(), user.getLastName()));
         user.setPassword(generateRandomPassword());
         user.setIsActive(true);
-        logger.info("Create entity {}", getCurrentEntityName());
-        logEntityObject(user);
         currentRepository.save(user);
-        logger.info("Entity {} successfully saved with id = {}", getCurrentEntityName(), user.getId());
         return user;
     }
 
     @Override
     public void update(T user) {
-        logger.info("Update entity {}. Set:", getCurrentEntityName());
-        logEntityObject(user);
         currentRepository.save(user);
+    }
+
+    @Override
+    public boolean login(String userName, String password) {
+        return ((UserRepository<?>) currentRepository).existsByUserNameAndPassword(userName, password);
+    }
+
+    @Override
+    public boolean existByFirstNameAndLastNameActiveUser(String firstName, String lastName) {
+        return ((UserRepository<?>) currentRepository).existsByFirstNameAndLastNameAndIsActiveTrue(firstName, lastName);
     }
 
     protected void createSampleTraining(Trainer trainer, Trainee trainee) {
@@ -94,7 +101,6 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
         training.setTrainingDuration(1L);
         trainee.getTrainings().add(training);
         trainer.getTrainings().add(training);
-
     }
 
 }

@@ -10,4 +10,5 @@ public interface TrainerRepository extends UserRepository<Trainer> {
 
     List<Trainer> findByTraineesNullAndIsActiveTrue();
 
+    List<Trainer> findByTrainees_UserNameNotContainingAndIsActiveTrue(String traineeUserName);
 }

@@ -72,4 +72,22 @@ public interface UserService<T extends User> extends BaseService<T> {
      */
     T findByUserName(String userName);
 
+    /**
+     * Check userName and password on existing user.
+     *
+     * @param userName username
+     * @param password password
+     * @return true if user exists
+     */
+    boolean login(String userName, String password);
+
+    /**
+     * Check if user exist with supplied firstName and lastName
+     *
+     * @param firstName firstName of user
+     * @param lastName lastName of user
+     * @return true if user exist
+     */
+    boolean existByFirstNameAndLastNameActiveUser(String firstName, String lastName);
+
 }

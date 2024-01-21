@@ -5,6 +5,7 @@ import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 import com.example.learn_spring_core.repository.TrainingTypeRepository;
 import com.example.learn_spring_core.service.impl.TrainingTypeServiceImpl;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -60,6 +61,21 @@ class TrainingTypeServiceTest extends TestsParent {
 
         assertEquals(trainingType, retrievedTrainingType);
         verify(trainingTypeRepository, times(1)).findById(trainingTypeId);
+    }
+
+    @Test
+    void testFindByName() {
+        TrainingTypeName trainingTypeName = TrainingTypeName.CARDIO;
+        TrainingType trainingType = new TrainingType();
+        trainingType.setTrainingTypeName(trainingTypeName);
+
+        when(trainingTypeRepository.findByTrainingTypeName(trainingTypeName)).thenReturn(trainingType);
+
+        TrainingType result = trainingTypeService.findByName(trainingTypeName);
+
+        Assertions.assertEquals(trainingType, result);
+        verify(trainingTypeRepository, times(1)).findByTrainingTypeName(trainingTypeName);
+
     }
 
 }

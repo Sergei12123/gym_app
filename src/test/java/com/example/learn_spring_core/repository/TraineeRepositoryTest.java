@@ -3,6 +3,7 @@ package com.example.learn_spring_core.repository;
 import com.example.learn_spring_core.entity.Trainee;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainee;
@@ -94,6 +95,56 @@ class TraineeRepositoryTest extends BaseRepositoryTest {
         traineeRepository.removeByUserName(traineeToRemove.getUserName());
         assertFalse(traineeRepository.existsByUserName(traineeToRemove.getUserName()));
     }
+
+    @Test
+    void testCountByUserNameIsStartingWith() {
+        String prefix = "sample";
+        int count = 5;
+
+        List<Trainee> sampleTrainees = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            Trainee trainee = createSampleTrainee(false);
+            trainee.setUserName(prefix + i);
+            sampleTrainees.add(trainee);
+        }
+
+        traineeRepository.saveAll(sampleTrainees);
+
+        long result = traineeRepository.countByUserNameStartsWith(prefix);
+        assertEquals(count, result);
+    }
+
+    @Test
+    void testExistsByUserNameAndPassword() {
+        String userName = "sampleUser";
+        String password = "samplePassword";
+
+        Trainee sampleTrainee = createSampleTrainee(false);
+        sampleTrainee.setUserName(userName);
+        sampleTrainee.setPassword(password);
+
+        traineeRepository.save(sampleTrainee);
+
+        assertTrue(traineeRepository.existsByUserNameAndPassword(userName, password));
+        assertFalse(traineeRepository.existsByUserNameAndPassword(userName, "incorrectPassword"));
+    }
+
+    @Test
+    void testExistsByFirstNameAndLastNameAndIsActiveTrue() {
+        String firstName = "John";
+        String lastName = "Doe";
+
+        Trainee sampleTrainee = createSampleTrainee(false);
+        sampleTrainee.setFirstName(firstName);
+        sampleTrainee.setLastName(lastName);
+
+        traineeRepository.save(sampleTrainee);
+
+        assertTrue(traineeRepository.existsByFirstNameAndLastNameAndIsActiveTrue(firstName, lastName));
+
+        assertFalse(traineeRepository.existsByFirstNameAndLastNameAndIsActiveTrue("IncorrectFirstName", "IncorrectLastName"));
+    }
+
 
 }
 

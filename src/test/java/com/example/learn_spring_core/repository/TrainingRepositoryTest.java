@@ -105,5 +105,24 @@ class TrainingRepositoryTest extends BaseRepositoryTest {
         assertTrue(result.contains(training));
     }
 
+    @Test
+    void findByTrainee_UserName() {
+        Training training = getSampleTraining(true);
+
+        List<Training> result = trainingRepository.findByTrainee_UserName(training.getTrainee().getUserName());
+
+        assertTrue(result.contains(training));
+    }
+
+    @Test
+    void findByTrainer_UserName() {
+        Training training = getSampleTraining(true);
+
+        List<Training> result = trainingRepository.findByTrainer_UserName(training.getTrainer().getUserName());
+
+        assertTrue(result.contains(training));
+    }
+
+
 }
 

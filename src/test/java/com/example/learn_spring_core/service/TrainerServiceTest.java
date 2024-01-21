@@ -6,6 +6,7 @@ import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.repository.TraineeRepository;
 import com.example.learn_spring_core.repository.TrainerRepository;
+import com.example.learn_spring_core.repository.UserRepository;
 import com.example.learn_spring_core.service.impl.TraineeServiceImpl;
 import com.example.learn_spring_core.service.impl.TrainerServiceImpl;
 import org.junit.jupiter.api.Assertions;
@@ -16,11 +17,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainer;
-import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainers;
+import static com.example.learn_spring_core.utils.SampleCreator.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -103,18 +104,16 @@ class TrainerServiceTest extends TestsParent {
         String expectedUserName = "John.Doe";
         String expectedUserName1 = "John.Doe1";
 
-        when(trainerRepository.existsByUserName(expectedUserName)).thenReturn(false);
+        when(trainerRepository.countByUserNameStartsWith(expectedUserName)).thenReturn(0L);
         String result = trainerService.generateUsername(firstName, lastName);
         Assertions.assertEquals(expectedUserName, result);
-        verify(trainerRepository, times(1)).existsByUserName(anyString());
+        verify(trainerRepository, times(1)).countByUserNameStartsWith(expectedUserName);
 
 
-        when(trainerRepository.existsByUserName(expectedUserName)).thenReturn(true);
-        when(trainerRepository.existsByUserName(expectedUserName1)).thenReturn(false);
-
+        when(trainerRepository.countByUserNameStartsWith(expectedUserName)).thenReturn(1L);
         String result2 = trainerService.generateUsername(firstName, lastName);
         Assertions.assertEquals(expectedUserName1, result2);
-        verify(trainerRepository, times(3)).existsByUserName(anyString());
+        verify(((UserRepository<?>) trainerRepository), times(2)).countByUserNameStartsWith(expectedUserName);
 
     }
 
@@ -193,6 +192,66 @@ class TrainerServiceTest extends TestsParent {
         trainerService.removeTraineeFromTrainer(2L, 1L);
 
         Assertions.assertTrue(trainer.getTrainees().isEmpty());
+    }
+
+    @Test
+    void testGetNotAssignedActiveTrainers() {
+        List<Trainer> notAssignedTrainers = new ArrayList<>();
+        for(int i = 0; i < 3; i++) {
+            notAssignedTrainers.add(createSampleTrainer(false));
+        }
+
+        when(trainerRepository.findByTraineesNullAndIsActiveTrue()).thenReturn(notAssignedTrainers);
+
+        List<Trainer> result = trainerService.getNotAssignedActiveTrainers();
+
+        Assertions.assertEquals(notAssignedTrainers, result);
+    }
+
+    @Test
+    void testGetNotAssignedToConcreteTraineeActiveTrainers() {
+        String traineeUserName = "sampleTrainee";
+        Trainee trainee = createSampleTrainee(true);
+        trainee.setUserName(traineeUserName);
+
+
+        List<Trainer> notAssignedTrainers = new ArrayList<>();
+        for(int i = 0; i < 3; i++) {
+            notAssignedTrainers.add(createSampleTrainer(false));
+        }
+
+        when(traineeRepository.findByUserName(traineeUserName)).thenReturn(trainee  );
+        when(trainerRepository.findByTrainees_UserNameNotContainingAndIsActiveTrue(traineeUserName)).thenReturn(notAssignedTrainers);
+
+        List<Trainer> result = trainerService.getNotAssignedToConcreteTraineeActiveTrainers(traineeUserName);
+
+        Assertions.assertEquals(notAssignedTrainers, result);
+    }
+
+    @Test
+    void testLogin() {
+        String userName = "sampleUser";
+        String password = "samplePassword";
+        boolean expectedResult = true;
+
+        when(trainerRepository.existsByUserNameAndPassword(userName, password)).thenReturn(expectedResult);
+
+        boolean result = trainerService.login(userName, password);
+
+        Assertions.assertEquals(expectedResult, result);
+    }
+
+    @Test
+    void testExistByFirstNameAndLastNameActiveUser() {
+        String firstName = "John";
+        String lastName = "Doe";
+        boolean expectedResult = true;
+
+        when(trainerRepository.existsByFirstNameAndLastNameAndIsActiveTrue(firstName, lastName)).thenReturn(expectedResult);
+
+        boolean result = trainerService.existByFirstNameAndLastNameActiveUser(firstName, lastName);
+
+        Assertions.assertEquals(expectedResult, result);
     }
 
 }

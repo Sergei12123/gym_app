@@ -1,7 +1,10 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
+import com.example.learn_spring_core.entity.Trainee;
+import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
+import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.repository.TrainingRepository;
 import com.example.learn_spring_core.service.impl.TrainingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,11 +13,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.learn_spring_core.utils.SampleCreator.createSampleTraining;
-import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainings;
+import static com.example.learn_spring_core.utils.SampleCreator.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -66,5 +70,92 @@ class TrainingServiceTest extends TestsParent {
         assertEquals(training, retrievedTraining);
         verify(trainingRepository, times(1)).findById(trainingId);
     }
+
+    @Test
+    void testGetAllByTraineeUserNameAndTrainingName() {
+        String traineeUserName = "sampleTrainee";
+        String trainingName = "sampleTraining";
+
+        List<Training> expectedTrainings = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            expectedTrainings.add(createSampleTraining(false));
+        }
+        when(trainingRepository.findByTrainee_UserNameAndTrainingName(traineeUserName, trainingName)).thenReturn(expectedTrainings);
+
+        List<Training> result = trainingService.getAllByTraineeUserNameAndTrainingName(traineeUserName, trainingName);
+
+        assertEquals(expectedTrainings, result);
+    }
+
+    @Test
+    void testGetAllByTrainerUserNameAndTrainingName() {
+        String trainerUserName = "sampleTrainer";
+        String trainingName = "sampleTraining";
+
+        List<Training> expectedTrainings = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            expectedTrainings.add(createSampleTraining(false));
+        }
+        when(trainingRepository.findByTrainer_UserNameAndTrainingName(trainerUserName, trainingName)).thenReturn(expectedTrainings);
+
+        List<Training> result = trainingService.getAllByTrainerUserNameAndTrainingName(trainerUserName, trainingName);
+
+        assertEquals(expectedTrainings, result);
+    }
+
+
+    @Test
+    void testGetTraineeTrainingList() {
+        Trainee sampleTrainee = createSampleTrainee(false);
+        Trainer sampleTrainer = createSampleTrainer(false);
+        LocalDate dateFrom = LocalDate.now().minusDays(7);
+        LocalDate dateTo = LocalDate.now().plusDays(7);
+        TrainingType trainingType = createSampleTrainingType(false);
+
+        List<Training> fullTrainingList = createSampleTrainings(false, 10);
+        for (int i = 0; i < 5; i++) {
+            fullTrainingList.get(i).setTrainingType(trainingType);
+            fullTrainingList.get(i).setTrainer(sampleTrainer);
+            fullTrainingList.get(i).setTrainee(sampleTrainee);
+            fullTrainingList.get(i).setTrainingDate(LocalDate.now());
+        }
+        when(trainingRepository.findByTrainee_UserName(sampleTrainee.getUserName())).thenReturn(fullTrainingList);
+
+        List<Training> result = trainingService.getTraineeTrainingList(sampleTrainee.getUserName(), dateFrom, dateTo, sampleTrainer.getUserName(), trainingType);
+
+        assertEquals(5, result.size());
+        assertEquals(filterByTrainingFields(fullTrainingList, dateFrom, dateTo, sampleTrainee.getUserName(), sampleTrainer.getUserName(), trainingType), result);
+    }
+
+    @Test
+    void testGetTrainerTrainingList() {
+        Trainee sampleTrainee = createSampleTrainee(false);
+        Trainer sampleTrainer = createSampleTrainer(false);
+        LocalDate dateFrom = LocalDate.now().minusDays(7);
+        LocalDate dateTo = LocalDate.now().plusDays(7);
+
+        List<Training> fullTrainingList = createSampleTrainings(false, 10);
+        for (int i = 0; i < 5; i++) {
+            fullTrainingList.get(i).setTrainer(sampleTrainer);
+            fullTrainingList.get(i).setTrainee(sampleTrainee);
+            fullTrainingList.get(i).setTrainingDate(LocalDate.now());
+        }
+        when(trainingRepository.findByTrainer_UserName(sampleTrainer.getUserName())).thenReturn(fullTrainingList);
+
+        List<Training> result = trainingService.getTrainerTrainingList(sampleTrainer.getUserName(), dateFrom, dateTo, sampleTrainee.getUserName());
+
+        assertEquals(5, result.size());
+        assertEquals(filterByTrainingFields(fullTrainingList, dateFrom, dateTo, sampleTrainee.getUserName(), sampleTrainer.getUserName(), null), result);
+    }
+
+    private List<Training> filterByTrainingFields(List<Training> trainingFullList, LocalDate dateFrom, LocalDate dateTo, String traineeUserName, String trainerUserName, TrainingType trainingType) {
+        return trainingFullList.stream()
+            .filter(training -> dateFrom == null || dateTo == null || training.getTrainingDate().isAfter(dateFrom) && training.getTrainingDate().isBefore(dateTo))
+            .filter(training -> traineeUserName == null || training.getTrainee().getUserName().equals(traineeUserName))
+            .filter(training -> trainerUserName == null || training.getTrainer().getUserName().equals(trainerUserName))
+            .filter(training -> trainingType == null || training.getTrainingType().equals(trainingType))
+            .toList();
+    }
+
 
 }

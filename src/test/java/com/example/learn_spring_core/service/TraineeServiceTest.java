@@ -132,16 +132,16 @@ class TraineeServiceTest extends TestsParent {
         String expectedUserName = "John.Doe";
         String expectedUserName1 = "John.Doe1";
 
-        when(traineeRepository.countByFirstNameAndLastName(firstName, lastName)).thenReturn(0L);
+        when(traineeRepository.countByUserNameStartsWith(expectedUserName)).thenReturn(0L);
         String result = traineeService.generateUsername(firstName, lastName);
         Assertions.assertEquals(expectedUserName, result);
-        verify(traineeRepository, times(1)).countByFirstNameAndLastName(firstName, lastName);
+        verify(traineeRepository, times(1)).countByUserNameStartsWith(expectedUserName);
 
 
-        when(traineeRepository.countByFirstNameAndLastName(firstName, lastName)).thenReturn(1L);
+        when(traineeRepository.countByUserNameStartsWith(expectedUserName)).thenReturn(1L);
         String result2 = traineeService.generateUsername(firstName, lastName);
         Assertions.assertEquals(expectedUserName1, result2);
-        verify(((UserRepository<?>) traineeRepository), times(2)).countByFirstNameAndLastName(firstName, lastName);
+        verify(((UserRepository<?>) traineeRepository), times(2)).countByUserNameStartsWith(expectedUserName);
 
     }
 
@@ -220,6 +220,32 @@ class TraineeServiceTest extends TestsParent {
         traineeService.removeTrainerFromTrainee(1L, 2L);
 
         Assertions.assertTrue(trainee.getTrainers().isEmpty());
+    }
+
+    @Test
+    void testLogin() {
+        String userName = "sampleUser";
+        String password = "samplePassword";
+        boolean expectedResult = true;
+
+        when(traineeRepository.existsByUserNameAndPassword(userName, password)).thenReturn(expectedResult);
+
+        boolean result = traineeService.login(userName, password);
+
+        Assertions.assertEquals(expectedResult, result);
+    }
+
+    @Test
+    void testExistByFirstNameAndLastNameActiveUser() {
+        String firstName = "John";
+        String lastName = "Doe";
+        boolean expectedResult = true;
+
+        when(traineeRepository.existsByFirstNameAndLastNameAndIsActiveTrue(firstName, lastName)).thenReturn(expectedResult);
+
+        boolean result = traineeService.existByFirstNameAndLastNameActiveUser(firstName, lastName);
+
+        Assertions.assertEquals(expectedResult, result);
     }
 
 }

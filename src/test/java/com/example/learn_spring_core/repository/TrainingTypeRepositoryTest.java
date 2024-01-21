@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainingType;
-import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainingTypes;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TrainingTypeRepositoryTest extends BaseRepositoryTest {
 
@@ -42,12 +42,8 @@ class TrainingTypeRepositoryTest extends BaseRepositoryTest {
 
     @Test
     void findAllTrainingType() {
-        List<TrainingType> sampleTrainingTypes = createSampleTrainingTypes(false, 3);
-        trainingTypeRepository.saveAll(sampleTrainingTypes);
-
         List<TrainingType> result = trainingTypeRepository.findAll();
-        assertEquals(sampleTrainingTypes.size(), result.size());
-        assertTrue(sampleTrainingTypes.containsAll(result) && result.containsAll(sampleTrainingTypes));
+        assertEquals(TrainingTypeName.values().length, result.size());
     }
 
     @Test
@@ -64,6 +60,11 @@ class TrainingTypeRepositoryTest extends BaseRepositoryTest {
         trainingTypeRepository.deleteById(trainingTypeToDelete.getId());
 
         assertTrue(trainingTypeRepository.findById(trainingTypeToDelete.getId()).isEmpty());
+    }
+
+    @Test
+    void findByTrainingTypeName() {
+        trainingTypeRepository.findById(1L).ifPresent(trainingTypeForGet -> assertEquals(trainingTypeForGet, trainingTypeRepository.findByTrainingTypeName(trainingTypeForGet.getTrainingTypeName())));
     }
 
 }

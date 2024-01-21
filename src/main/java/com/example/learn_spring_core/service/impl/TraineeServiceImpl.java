@@ -17,7 +17,6 @@ public class TraineeServiceImpl extends UserServiceImpl<Trainee> implements Trai
     }
 
     public void delete(Long traineId) {
-        logger.info("Delete the entity Trainee with id = {}", traineId);
         currentRepository.deleteById(traineId);
     }
 

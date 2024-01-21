@@ -25,12 +25,10 @@ public abstract class BaseServiceImpl<T extends BaseEntity> implements BaseServi
     private ObjectMapper objectMapper;
 
     public T getById(Long entityId) {
-        logger.info("Get an entity {} with id = {}", getCurrentEntityName(), entityId);
         return currentRepository.findById(entityId).orElse(null);
     }
 
     public List<T> findAll() {
-        logger.info("Get all entities {}", getCurrentEntityName());
         return currentRepository.findAll();
     }
 

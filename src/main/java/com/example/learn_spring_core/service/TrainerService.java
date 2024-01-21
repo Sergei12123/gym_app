@@ -14,6 +14,14 @@ public interface TrainerService extends UserService<Trainer> {
     List<Trainer> getNotAssignedActiveTrainers();
 
     /**
+     * Get not assigned to concrete trainee active trainers.
+     *
+     * @param traineeUserName userName of trainee
+     * @return list of trainers
+     */
+    List<Trainer> getNotAssignedToConcreteTraineeActiveTrainers(String traineeUserName);
+
+    /**
      * Adds a trainee to a trainer via training table.
      *
      * @param traineeId id of trainee
