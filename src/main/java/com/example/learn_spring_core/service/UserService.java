@@ -16,14 +16,15 @@ public interface UserService<T extends User> extends BaseService<T> {
      * Update existing user
      *
      * @param user user with new data
+     * @return updated user
      */
-    void update(T user);
+    T update(T user);
 
     /**
      * Generate username
      *
      * @param firstName first name of user
-     * @param lastName last name of user
+     * @param lastName  last name of user
      * @return username for user
      */
     String generateUsername(String firstName, String lastName);
@@ -36,12 +37,13 @@ public interface UserService<T extends User> extends BaseService<T> {
     String generateRandomPassword();
 
     /**
-     * Change user password
+     * Change the password for a user.
      *
-     * @param userId id of user
-     * @param newPassword new password
+     * @param userName    the username of the user
+     * @param oldPassword the user's current password
+     * @param newPassport the new password to set for the user
      */
-    void changePassword(Long userId, String newPassword);
+    void changePassword(String userName, String oldPassword, String newPassport);
 
     /**
      * Set user active to true
@@ -56,6 +58,14 @@ public interface UserService<T extends User> extends BaseService<T> {
      * @param userId id of user
      */
     void deactivate(Long userId);
+
+    /**
+     * Sets the active status of a user.
+     *
+     * @param userName the username of the user
+     * @param isActive the active status to set
+     */
+    void setActive(String userName, boolean isActive);
 
     /**
      * Delete user by username
@@ -85,7 +95,7 @@ public interface UserService<T extends User> extends BaseService<T> {
      * Check if user exist with supplied firstName and lastName
      *
      * @param firstName firstName of user
-     * @param lastName lastName of user
+     * @param lastName  lastName of user
      * @return true if user exist
      */
     boolean existByFirstNameAndLastNameActiveUser(String firstName, String lastName);

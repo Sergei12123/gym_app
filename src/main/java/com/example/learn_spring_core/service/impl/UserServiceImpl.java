@@ -5,19 +5,26 @@ import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
 import com.example.learn_spring_core.entity.User;
+import com.example.learn_spring_core.exception.IncorrectCredentialsException;
+import com.example.learn_spring_core.exception.UserAlreadyExistsException;
 import com.example.learn_spring_core.repository.UserRepository;
 import com.example.learn_spring_core.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @Transactional
 public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T> implements UserService<T> {
 
     public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    public static final String USER_NOT_FOUND_EX = "User with username %s not found";
+
 
     @Override
     public String generateUsername(String firstName, String lastName) {
@@ -41,9 +48,17 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     }
 
     @Override
-    public void changePassword(Long userId, String newPassword) {
-        T user = getById(userId);
-        user.setPassword(newPassword);
+    public void changePassword(String userName, String oldPassword, String newPassport) {
+        Optional<T> user = ((UserRepository<T>) currentRepository).findByUserName(userName);
+        if (user.isPresent()) {
+            if (((UserRepository<T>) currentRepository).existsByUserNameAndPassword(userName, oldPassword)) {
+                user.get().setPassword(newPassport);
+            } else {
+                throw new IncorrectCredentialsException();
+            }
+        } else {
+            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName));
+        }
     }
 
     @Override
@@ -59,17 +74,38 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     }
 
     @Override
+    public void setActive(String userName, boolean isActive) {
+        Optional<T> user = ((UserRepository<T>) currentRepository).findByUserName(userName);
+        if (user.isPresent()) {
+            user.get().setIsActive(isActive);
+        } else {
+            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName));
+        }
+    }
+
+    @Override
     public void deleteByUserName(String userName) {
-        ((UserRepository<T>) currentRepository).removeByUserName(userName);
+        Optional<T> user = ((UserRepository<T>) currentRepository).findByUserName(userName);
+        if (user.isPresent()) {
+            currentRepository.delete(user.get());
+        } else {
+            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName));
+        }
+
     }
 
     @Override
     public T findByUserName(String userName) {
-        return ((UserRepository<T>) currentRepository).findByUserName(userName);
+        return ((UserRepository<T>) currentRepository).findByUserName(userName)
+            .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName)));
     }
 
     @Override
     public T create(T user) {
+        if (((UserRepository<T>) currentRepository).existsByFirstNameAndLastNameAndIsActiveTrue(user.getFirstName(), user.getLastName())) {
+            throw new UserAlreadyExistsException();
+        }
+
         user.setUserName(generateUsername(user.getFirstName(), user.getLastName()));
         user.setPassword(generateRandomPassword());
         user.setIsActive(true);
@@ -78,13 +114,20 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     }
 
     @Override
-    public void update(T user) {
-        currentRepository.save(user);
+    public T update(T user) {
+        if (!((UserRepository<T>) currentRepository).existsByUserName(user.getUserName())) {
+            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(user.getUserName()));
+        }
+        return currentRepository.save(user);
     }
 
     @Override
     public boolean login(String userName, String password) {
-        return ((UserRepository<?>) currentRepository).existsByUserNameAndPassword(userName, password);
+        if (((UserRepository<?>) currentRepository).existsByUserNameAndPassword(userName, password)) {
+            return true;
+        } else {
+            throw new IncorrectCredentialsException();
+        }
     }
 
     @Override

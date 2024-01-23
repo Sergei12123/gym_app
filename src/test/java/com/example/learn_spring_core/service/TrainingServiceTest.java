@@ -5,6 +5,8 @@ import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
 import com.example.learn_spring_core.entity.TrainingType;
+import com.example.learn_spring_core.repository.TraineeRepository;
+import com.example.learn_spring_core.repository.TrainerRepository;
 import com.example.learn_spring_core.repository.TrainingRepository;
 import com.example.learn_spring_core.service.impl.TrainingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,11 +30,21 @@ class TrainingServiceTest extends TestsParent {
     @Mock
     private TrainingRepository trainingRepository;
 
+    @Mock
+    private TrainerRepository trainerRepository;
+
+    @Mock
+    private TraineeRepository traineeRepository;
+
     @InjectMocks
     private TrainingServiceImpl trainingService;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
+        Field hack = TrainingServiceImpl.class.getSuperclass().getDeclaredField("currentRepository");
+        hack.setAccessible(true);
+        hack.set(trainingService, trainingRepository);
+
         when(trainingRepository.save(any(Training.class))).thenAnswer(invocation -> {
             Training trainingArgument = invocation.getArgument(0);
             trainingArgument.setId(1L);
@@ -42,6 +55,8 @@ class TrainingServiceTest extends TestsParent {
     @Test
     void testCreateTraining() {
         Training training = createSampleTraining(false);
+        when(traineeRepository.findByUserName(training.getTrainee().getUserName())).thenReturn(Optional.of(training.getTrainee()));
+        when(trainerRepository.findByUserName(training.getTrainer().getUserName())).thenReturn(Optional.of(training.getTrainer()));
 
         trainingService.create(training);
 
@@ -120,7 +135,7 @@ class TrainingServiceTest extends TestsParent {
             fullTrainingList.get(i).setTrainingDate(LocalDate.now());
         }
         when(trainingRepository.findByTrainee_UserName(sampleTrainee.getUserName())).thenReturn(fullTrainingList);
-
+        when(traineeRepository.existsByUserName(sampleTrainee.getUserName())).thenReturn(true);
         List<Training> result = trainingService.getTraineeTrainingList(sampleTrainee.getUserName(), dateFrom, dateTo, sampleTrainer.getUserName(), trainingType);
 
         assertEquals(5, result.size());
@@ -141,7 +156,7 @@ class TrainingServiceTest extends TestsParent {
             fullTrainingList.get(i).setTrainingDate(LocalDate.now());
         }
         when(trainingRepository.findByTrainer_UserName(sampleTrainer.getUserName())).thenReturn(fullTrainingList);
-
+        when(trainerRepository.existsByUserName(sampleTrainer.getUserName())).thenReturn(true);
         List<Training> result = trainingService.getTrainerTrainingList(sampleTrainer.getUserName(), dateFrom, dateTo, sampleTrainee.getUserName());
 
         assertEquals(5, result.size());

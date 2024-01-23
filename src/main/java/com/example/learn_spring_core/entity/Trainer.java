@@ -1,5 +1,6 @@
 package com.example.learn_spring_core.entity;
 
+import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,6 +34,20 @@ public class Trainer extends User {
 
     @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Training> trainings = new ArrayList<>();
+
+    public Trainer(String firstName, String lastName, TrainingTypeName trainingTypeName) {
+        super(firstName, lastName);
+        this.trainingType = new TrainingType(trainingTypeName);
+    }
+
+    public Trainer(String userName, String firstName, String lastName, TrainingType trainingType, boolean isActive) {
+        super(userName, firstName, lastName, isActive);
+        this.trainingType = trainingType;
+    }
+
+    public Trainer(String trainerUserName) {
+        super(trainerUserName);
+    }
 
     @Override
     public boolean equals(Object o) {

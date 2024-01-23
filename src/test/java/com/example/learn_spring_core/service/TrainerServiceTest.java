@@ -33,6 +33,9 @@ class TrainerServiceTest extends TestsParent {
     @Mock
     private TraineeRepository traineeRepository;
 
+    @Mock
+    private TrainingTypeService trainingTypeService;
+
     @InjectMocks
     private TrainerServiceImpl trainerService;
 
@@ -56,7 +59,7 @@ class TrainerServiceTest extends TestsParent {
         trainer.setLastName("Doe");
         trainer.setTrainingType(new TrainingType());
         when(trainerRepository.existsByUserName(Mockito.anyString())).thenReturn(false);
-
+        when(trainingTypeService.findByName(trainer.getTrainingType().getTrainingTypeName())).thenReturn(new TrainingType());
         trainerService.create(trainer);
 
         Mockito.verify(trainerRepository, times(1)).save(Mockito.any(Trainer.class));
@@ -88,9 +91,8 @@ class TrainerServiceTest extends TestsParent {
 
     @Test
     void testUpdateTrainee() {
-        Long traineeId = 1L;
         Trainer sampleTrainee = createSampleTrainer(true);
-        when(trainerRepository.findById(traineeId)).thenReturn(Optional.of(sampleTrainee));
+        when(trainerRepository.existsByUserName(sampleTrainee.getUserName())).thenReturn(true);
 
         trainerService.update(sampleTrainee);
 
@@ -130,10 +132,11 @@ class TrainerServiceTest extends TestsParent {
 
     @Test
     void testChangePassword() {
-        Long trainerId = 1L;
         Trainer sampleTrainer = createSampleTrainer(true);
-        when(trainerRepository.findById(trainerId)).thenReturn(Optional.of(sampleTrainer));
-        trainerService.changePassword(trainerId, "newPassword");
+        when(trainerRepository.findByUserName(sampleTrainer.getUserName())).thenReturn(Optional.of(sampleTrainer));
+        when(trainerRepository.existsByUserNameAndPassword(sampleTrainer.getUserName(), sampleTrainer.getPassword())).thenReturn(true);
+
+        trainerService.changePassword(sampleTrainer.getUserName(), sampleTrainer.getPassword(), "newPassword");
         Assertions.assertEquals("newPassword", sampleTrainer.getPassword());
     }
 
@@ -197,7 +200,7 @@ class TrainerServiceTest extends TestsParent {
     @Test
     void testGetNotAssignedActiveTrainers() {
         List<Trainer> notAssignedTrainers = new ArrayList<>();
-        for(int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             notAssignedTrainers.add(createSampleTrainer(false));
         }
 
@@ -216,11 +219,11 @@ class TrainerServiceTest extends TestsParent {
 
 
         List<Trainer> notAssignedTrainers = new ArrayList<>();
-        for(int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             notAssignedTrainers.add(createSampleTrainer(false));
         }
 
-        when(traineeRepository.findByUserName(traineeUserName)).thenReturn(trainee  );
+        when(traineeRepository.existsByUserName(traineeUserName)).thenReturn(true);
         when(trainerRepository.findByTrainees_UserNameNotContainingAndIsActiveTrue(traineeUserName)).thenReturn(notAssignedTrainers);
 
         List<Trainer> result = trainerService.getNotAssignedToConcreteTraineeActiveTrainers(traineeUserName);

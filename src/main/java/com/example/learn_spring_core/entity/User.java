@@ -2,7 +2,10 @@ package com.example.learn_spring_core.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Objects;
 
@@ -28,6 +31,20 @@ public abstract class User extends BaseEntity {
 
     @Column(name = "is_active")
     protected Boolean isActive;
+    protected User(String userName) {
+        this.userName = userName;
+    }
+    protected User(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    protected User(String userName, String firstName, String lastName, boolean isActive) {
+        this.userName = userName;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.isActive = isActive;
+    }
 
     @Override
     public boolean equals(Object o) {

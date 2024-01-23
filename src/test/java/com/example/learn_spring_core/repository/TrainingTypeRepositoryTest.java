@@ -64,7 +64,7 @@ class TrainingTypeRepositoryTest extends BaseRepositoryTest {
 
     @Test
     void findByTrainingTypeName() {
-        trainingTypeRepository.findById(1L).ifPresent(trainingTypeForGet -> assertEquals(trainingTypeForGet, trainingTypeRepository.findByTrainingTypeName(trainingTypeForGet.getTrainingTypeName())));
+        trainingTypeRepository.findById(1L).ifPresent(trainingTypeForGet -> assertEquals(trainingTypeForGet, trainingTypeRepository.findByTrainingTypeName(trainingTypeForGet.getTrainingTypeName()).get()));
     }
 
 }

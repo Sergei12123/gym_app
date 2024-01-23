@@ -82,7 +82,7 @@ class TraineeRepositoryTest extends BaseRepositoryTest {
         Trainee sampleTrainee = createSampleTrainee(false);
         traineeRepository.save(sampleTrainee);
 
-        Trainee foundTrainee = traineeRepository.findByUserName(sampleTrainee.getUserName());
+        Trainee foundTrainee = traineeRepository.findByUserName(sampleTrainee.getUserName()).get();
         assertNotNull(foundTrainee);
         assertEquals(sampleTrainee, foundTrainee);
     }

@@ -69,7 +69,7 @@ class TrainingTypeServiceTest extends TestsParent {
         TrainingType trainingType = new TrainingType();
         trainingType.setTrainingTypeName(trainingTypeName);
 
-        when(trainingTypeRepository.findByTrainingTypeName(trainingTypeName)).thenReturn(trainingType);
+        when(trainingTypeRepository.findByTrainingTypeName(trainingTypeName)).thenReturn(Optional.of(trainingType));
 
         TrainingType result = trainingTypeService.findByName(trainingTypeName);
 

@@ -4,8 +4,6 @@ import com.example.learn_spring_core.dto.TraineeTrainingProfileDTO;
 import com.example.learn_spring_core.dto.TrainerTrainingProfileDTO;
 import com.example.learn_spring_core.entity.Training;
 import com.example.learn_spring_core.entity.TrainingType;
-import com.example.learn_spring_core.service.TraineeService;
-import com.example.learn_spring_core.service.TrainerService;
 import com.example.learn_spring_core.service.TrainingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -27,10 +25,6 @@ import java.util.List;
 @Tag(name = "Training", description = "Training management APIs")
 public class TrainingController {
 
-    private final TraineeService traineeService;
-
-    private final TrainerService trainerService;
-
     private final TrainingService trainingService;
 
     @Operation(summary = "Get trainee training list")
@@ -49,12 +43,11 @@ public class TrainingController {
                                                                                   @RequestParam(value = "dateTo", required = false) final LocalDate dateTo,
                                                                                   @RequestParam(value = "trainerUserName", required = false) final String trainerUserName,
                                                                                   @RequestParam(value = "trainingType", required = false) final TrainingType trainingType) {
-        if (traineeService.findByUserName(trainerUserName) != null) {
-            List<Training> trainingList = trainingService.getTraineeTrainingList(traineeUserName, dateFrom, dateTo, trainerUserName, trainingType);
-            return ResponseEntity.ok(trainingList.stream().map(TraineeTrainingProfileDTO::new).toList());
-        } else {
-            return ResponseEntity.status(404).build();
-        }
+        return ResponseEntity.ok(
+            trainingService.getTraineeTrainingList(traineeUserName, dateFrom, dateTo, trainerUserName, trainingType).stream()
+                .map(TraineeTrainingProfileDTO::new).toList()
+        );
+
     }
 
     @Operation(summary = "Get trainer training list")
@@ -72,12 +65,11 @@ public class TrainingController {
                                                                                   @RequestParam(value = "dateFrom", required = false) final LocalDate dateFrom,
                                                                                   @RequestParam(value = "dateTo", required = false) final LocalDate dateTo,
                                                                                   @RequestParam(value = "traineeUserName", required = false) final String traineeUserName) {
-        if (trainerService.findByUserName(trainerUserName) != null) {
-            List<Training> trainingList = trainingService.getTrainerTrainingList(trainerUserName, dateFrom, dateTo, traineeUserName);
-            return ResponseEntity.ok(trainingList.stream().map(TrainerTrainingProfileDTO::new).toList());
-        } else {
-            return ResponseEntity.status(404).build();
-        }
+
+        return ResponseEntity.ok(
+            trainingService.getTrainerTrainingList(trainerUserName, dateFrom, dateTo, traineeUserName).stream()
+                .map(TrainerTrainingProfileDTO::new).toList()
+        );
     }
 
     @Operation(summary = "Create new training")
@@ -95,18 +87,10 @@ public class TrainingController {
                                               @RequestParam(value = "trainingName") final String trainingName,
                                               @RequestParam(value = "trainingDate") final LocalDate trainingDate,
                                               @RequestParam(value = "trainingDuration") final Long trainingDuration) {
-        if (traineeService.findByUserName(traineeUserName) != null && trainerService.findByUserName(trainerUserName) != null) {
-            Training training = new Training();
-            training.setTrainee(traineeService.findByUserName(traineeUserName));
-            training.setTrainer(trainerService.findByUserName(trainerUserName));
-            training.setTrainingName(trainingName);
-            training.setTrainingDate(trainingDate);
-            training.setTrainingDuration(trainingDuration);
-            trainingService.create(training);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(404).build();
-        }
+
+        trainingService.create(new Training(traineeUserName, trainerUserName, trainingName, trainingDate, trainingDuration));
+        return ResponseEntity.ok().build();
+
     }
 
 

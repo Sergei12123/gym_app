@@ -4,8 +4,10 @@ import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface TrainingTypeRepository extends BaseRepository<TrainingType> {
 
-    TrainingType findByTrainingTypeName(TrainingTypeName name);
+    Optional<TrainingType> findByTrainingTypeName(TrainingTypeName name);
 }

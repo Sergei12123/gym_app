@@ -92,6 +92,8 @@ public class SampleCreator {
         training.setTrainingDate(LocalDate.of(2023, 5, 15));
         training.setTrainingDuration(2L);
         training.setTrainingName("Base training");
+        training.setTrainee(createSampleTrainee(true));
+        training.setTrainer(createSampleTrainer(true));
         return training;
     }
 

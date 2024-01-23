@@ -5,7 +5,6 @@ import com.example.learn_spring_core.dto.TrainerOfTraineeDTO;
 import com.example.learn_spring_core.dto.UserCredentialsDTO;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.service.TraineeService;
-import com.example.learn_spring_core.service.TrainerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,8 +28,6 @@ public class TraineeController {
 
     private final TraineeService traineeService;
 
-    private final TrainerService trainerService;
-
     @Operation(summary = "Register trainee")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200",
@@ -46,21 +43,9 @@ public class TraineeController {
                                                               @RequestParam(value = "lastName") final String lastName,
                                                               @RequestParam(value = "dateOfBirth", required = false) final LocalDate dateOfBirth,
                                                               @RequestParam(value = "address", required = false) final String address) {
-        if(!trainerService.existByFirstNameAndLastNameActiveUser(firstName, lastName)) {
-            Trainee trainee = new Trainee();
-            trainee.setFirstName(firstName);
-            trainee.setLastName(lastName);
-            trainee.setDateOfBirth(dateOfBirth);
-            trainee.setAddress(address);
-
-            traineeService.create(trainee);
-            return ResponseEntity.ok(UserCredentialsDTO.builder()
-                .username(trainee.getUserName())
-                .password(trainee.getPassword())
-                .build());
-        } else {
-            return ResponseEntity.status(409).build();
-        }
+        return ResponseEntity.ok(new UserCredentialsDTO(
+            traineeService.create(new Trainee(firstName, lastName, dateOfBirth, address))
+        ));
     }
 
     @Operation(summary = "Login trainee")
@@ -75,11 +60,8 @@ public class TraineeController {
     @GetMapping("/login")
     public ResponseEntity<Object> loginTrainee(@RequestParam(value = "userName") final String userName,
                                                @RequestParam(value = "password") final String password) {
-        if (traineeService.login(userName, password)) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(401).build();
-        }
+        traineeService.login(userName, password);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Change trainee password")
@@ -95,12 +77,8 @@ public class TraineeController {
     public ResponseEntity<Object> changePasswordTrainee(@RequestParam(value = "userName") final String userName,
                                                         @RequestParam(value = "oldPassword") final String oldPassword,
                                                         @RequestParam(value = "newPassword") final String newPassport) {
-        if (traineeService.login(userName, oldPassword)) {
-            traineeService.changePassword(traineeService.findByUserName(userName).getId(), newPassport);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(401).build();
-        }
+        traineeService.changePassword(userName, oldPassword, newPassport);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Get trainee profile by userName")
@@ -115,12 +93,9 @@ public class TraineeController {
     })
     @GetMapping("/profile")
     public ResponseEntity<TraineeProfileDTO> getTraineeProfile(@RequestParam(value = "userName") final String userName) {
-        Trainee trainee = traineeService.findByUserName(userName);
-        if (trainee != null) {
-            return ResponseEntity.ok(new TraineeProfileDTO(trainee));
-        } else {
-            return ResponseEntity.status(404).build();
-        }
+        return ResponseEntity.ok(new TraineeProfileDTO(
+            traineeService.findByUserName(userName)
+        ));
     }
 
     @Operation(summary = "Update trainee profile")
@@ -140,18 +115,10 @@ public class TraineeController {
                                                                   @RequestParam(value = "dateOfBirth", required = false) final LocalDate dateOfBirth,
                                                                   @RequestParam(value = "address", required = false) final String address,
                                                                   @RequestParam(value = "isActive") final boolean isActive) {
-        Trainee trainee = traineeService.findByUserName(userName);
-        if (trainee != null) {
-            trainee.setFirstName(firstName);
-            trainee.setLastName(lastName);
-            trainee.setDateOfBirth(dateOfBirth);
-            trainee.setAddress(address);
-            trainee.setIsActive(isActive);
-            traineeService.update(trainee);
-            return ResponseEntity.ok(new TraineeProfileDTO(trainee));
-        } else {
-            return ResponseEntity.status(404).build();
-        }
+        return ResponseEntity.ok(new TraineeProfileDTO(
+            traineeService.update(new Trainee(userName, firstName, lastName, dateOfBirth, address, isActive))
+        ));
+
     }
 
     @Operation(summary = "Delete trainee by userName")
@@ -165,13 +132,8 @@ public class TraineeController {
     })
     @DeleteMapping
     public ResponseEntity<Object> deleteTrainee(@RequestParam(value = "userName") final String userName) {
-        if (traineeService.findByUserName(userName) != null) {
-            traineeService.deleteByUserName(userName);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(404).build();
-        }
-
+        traineeService.deleteByUserName(userName);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Update trainee trainers list")
@@ -187,19 +149,8 @@ public class TraineeController {
     @PutMapping("/trainers")
     public ResponseEntity<List<TrainerOfTraineeDTO>> updateTraineeTrainersList(@RequestParam(value = "userName") final String userName,
                                                                                @RequestParam(value = "trainerUserNames") final List<String> trainerUserNames) {
-        Trainee trainee = traineeService.findByUserName(userName);
-        if (trainee != null) {
-            trainee.getTrainers().stream()
-                .filter(trainer -> !trainerUserNames.contains(trainer.getUserName()))
-                .forEach(trainer -> traineeService.removeTrainerFromTrainee(trainee.getId(), trainer.getId()));
-            trainerUserNames.stream()
-                .filter(trainerUserName -> trainee.getTrainers().stream().noneMatch(trainer -> trainer.getUserName().equals(trainerUserName)))
-                .forEach(trainerUserName -> traineeService.addTrainerToTrainee(trainee.getId(), trainerService.findByUserName(trainerUserName).getId()));
 
-            return ResponseEntity.ok(trainee.getTrainers().stream().map(TrainerOfTraineeDTO::new).toList());
-        } else {
-            return ResponseEntity.status(404).build();
-        }
+        return ResponseEntity.ok(traineeService.updateTraineeTrainersList(userName, trainerUserNames));
     }
 
     @Operation(summary = "Set trainee active status")
@@ -214,16 +165,9 @@ public class TraineeController {
     @PatchMapping("/setActive")
     public ResponseEntity<Object> setActiveTrainee(@RequestParam(value = "userName") final String userName,
                                                    @RequestParam(value = "isActive") final boolean isActive) {
-        if (traineeService.findByUserName(userName) != null) {
-            if (isActive) {
-                traineeService.activate(traineeService.findByUserName(userName).getId());
-            } else {
-                traineeService.deactivate(traineeService.findByUserName(userName).getId());
-            }
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(404).build();
-        }
+        traineeService.setActive(userName, isActive);
+        return ResponseEntity.ok().build();
+
     }
 
 }

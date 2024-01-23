@@ -35,6 +35,23 @@ public class Trainee extends User {
     @OneToMany(mappedBy = "trainee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Training> trainings = new ArrayList<>();
 
+    public Trainee(String userName, String firstName, String lastName, LocalDate dateOfBirth, String address, boolean isActive) {
+        super(userName, firstName, lastName, isActive);
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
+    }
+
+    public Trainee(String firstName, String lastName, LocalDate dateOfBirth, String address) {
+        super(firstName, lastName);
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
+    }
+
+    public Trainee(String traineeUserName) {
+        super(traineeUserName);
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.learn_spring_core.utils.SampleCreator.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -106,9 +107,9 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
     void findByUserNameTrainer() {
         Trainer sampleTrainer = getSampleTrainerForSave(true);
 
-        Trainer foundTrainer = trainerRepository.findByUserName(sampleTrainer.getUserName());
+        Optional<Trainer> foundTrainer = trainerRepository.findByUserName(sampleTrainer.getUserName());
         assertNotNull(foundTrainer);
-        assertEquals(sampleTrainer, foundTrainer);
+        assertEquals(sampleTrainer, foundTrainer.get());
     }
 
     @Test

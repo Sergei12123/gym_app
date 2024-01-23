@@ -5,16 +5,20 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @NoRepositoryBean
 public interface UserRepository<T extends User> extends BaseRepository<T> {
 
     boolean existsByUserName(String userName);
 
-    T findByUserName(String userName);
+    Optional<T> findByUserName(String userName);
 
     boolean existsByUserNameAndPassword(String userName, String password);
 
+    @Transactional
     boolean existsByFirstNameAndLastNameAndIsActiveTrue(String firstName, String lastName);
 
     @Modifying

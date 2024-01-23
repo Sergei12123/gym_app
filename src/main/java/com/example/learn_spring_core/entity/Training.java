@@ -38,6 +38,14 @@ public class Training extends BaseEntity {
     @Column(name = "training_duration", nullable = false)
     private Long trainingDuration;
 
+    public Training(String traineeUserName, String trainerUserName, String trainingName, LocalDate trainingDate, Long trainingDuration) {
+        this.trainee = new Trainee(traineeUserName);
+        this.trainer = new Trainer(trainerUserName);
+        this.trainingName = trainingName;
+        this.trainingDate = trainingDate;
+        this.trainingDuration = trainingDuration;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

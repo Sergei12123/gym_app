@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainee;
+import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -119,6 +120,7 @@ class TraineeServiceTest extends TestsParent {
         Long traineeId = 1L;
         Trainee sampleTrainee = createSampleTrainee(true);
         when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(sampleTrainee));
+        when(traineeRepository.existsByUserName(sampleTrainee.getUserName())).thenReturn(true);
 
         traineeService.update(sampleTrainee);
 
@@ -161,7 +163,10 @@ class TraineeServiceTest extends TestsParent {
         Long traineeId = 1L;
         Trainee sampleTrainee = createSampleTrainee(true);
         when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(sampleTrainee));
-        traineeService.changePassword(traineeId, "newPassword");
+        when(traineeRepository.findByUserName(sampleTrainee.getUserName())).thenReturn(Optional.of(sampleTrainee));
+        when(traineeRepository.existsByUserNameAndPassword(sampleTrainee.getUserName(), sampleTrainee.getPassword())).thenReturn(true);
+        traineeService.changePassword(sampleTrainee.getUserName(), sampleTrainee.getPassword(), "newPassword");
+
         Assertions.assertEquals("newPassword", sampleTrainee.getPassword());
     }
 
@@ -189,18 +194,16 @@ class TraineeServiceTest extends TestsParent {
         Trainee trainee = new Trainee();
         trainee.setId(1L);
 
-        Trainer trainer = new Trainer();
-        trainer.setId(2L);
+        Trainer trainer = createSampleTrainer(true);
 
-        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.findByUserName(trainer.getUserName())).thenReturn(Optional.of(trainer));
         when(traineeRepository.save(trainee)).thenAnswer(invocationOnMock -> {
             Trainee trainee1 = invocationOnMock.getArgument(0);
             trainee1.getTrainers().add(trainer);
             return trainee1;
         });
-        when(traineeRepository.findById(1L)).thenReturn(Optional.of(trainee));
 
-        traineeService.addTrainerToTrainee(2L, 1L);
+        traineeService.addTrainerToTrainee(trainer.getUserName(), trainee);
 
         Assertions.assertTrue(trainee.getTrainers().contains(trainer));
     }
