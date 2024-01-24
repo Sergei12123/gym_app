@@ -54,10 +54,7 @@ public class TrainingServiceImpl extends BaseServiceImpl<Training> implements Tr
         }
         entity.setTrainer(foundTrainer.get());
         entity.setTrainee(foundTrainee.get());
-        logger.info("Create entity {}", getCurrentEntityName());
-        logEntityObject(entity);
         currentRepository.save(entity);
-        logger.info("Entity {} successfully saved with id = {}", getCurrentEntityName(), entity.getId());
         return entity;
     }
 

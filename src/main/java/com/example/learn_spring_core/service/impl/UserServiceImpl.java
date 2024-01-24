@@ -10,6 +10,7 @@ import com.example.learn_spring_core.exception.UserAlreadyExistsException;
 import com.example.learn_spring_core.repository.UserRepository;
 import com.example.learn_spring_core.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T> implements UserService<T> {
@@ -31,7 +33,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
         String baseUsername = firstName + "." + lastName;
         Long suffix = ((UserRepository<?>) currentRepository).countByUserNameStartsWith(baseUsername);
         String username = baseUsername + (suffix > 0 ? String.valueOf(suffix) : "");
-        logger.info("Transaction: {}. For the {} {} {}, has been generated the nickname {}", TransactionIdHolder.getTransactionId(), getCurrentEntityName(), firstName, lastName, username);
+        log.info("Transaction: {}. For the {} {} {}, has been generated the nickname {}", TransactionIdHolder.getTransactionId(), getCurrentEntityName(), firstName, lastName, username);
         return username;
     }
 
@@ -43,7 +45,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
             int randomIndex = random.nextInt(CHARACTERS.length());
             password.append(CHARACTERS.charAt(randomIndex));
         }
-        logger.info("Transaction: {}. Password was generated for the {}", TransactionIdHolder.getTransactionId(), getCurrentEntityName());
+        log.info("Transaction: {}. Password was generated for the {}", TransactionIdHolder.getTransactionId(), getCurrentEntityName());
         return password.toString();
     }
 

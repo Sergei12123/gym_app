@@ -6,17 +6,15 @@ import com.example.learn_spring_core.repository.BaseRepository;
 import com.example.learn_spring_core.service.BaseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Transactional
 public abstract class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
-
-    protected static final Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
 
     @Autowired
     protected BaseRepository<T> currentRepository;
@@ -35,7 +33,7 @@ public abstract class BaseServiceImpl<T extends BaseEntity> implements BaseServi
     public void logEntityObject(T entity) {
         try {
             String jsonEntity = objectMapper.writeValueAsString(entity);
-            logger.info(jsonEntity);
+            log.info(jsonEntity);
         } catch (JsonProcessingException e) {
             throw new EntityToJsonSerializeException(e);
         }
