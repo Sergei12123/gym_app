@@ -15,7 +15,7 @@ public class NotAssignedTrainerProfileDTO {
     private boolean isActive;
 
     public NotAssignedTrainerProfileDTO(Trainer trainer) {
-        this.userName = trainer.getUserName();
+        this.userName = trainer.getUsername();
         this.firstName = trainer.getFirstName();
         this.lastName = trainer.getLastName();
         this.specialization = trainer.getTrainingType().getTrainingTypeName();

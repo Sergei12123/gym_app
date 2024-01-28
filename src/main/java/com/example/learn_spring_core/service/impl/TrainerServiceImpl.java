@@ -1,5 +1,6 @@
 package com.example.learn_spring_core.service.impl;
 
+import com.example.learn_spring_core.dto.UserCredentialsDTO;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.repository.TraineeRepository;
@@ -61,7 +62,7 @@ public class TrainerServiceImpl extends UserServiceImpl<Trainer> implements Trai
     }
 
     @Override
-    public Trainer create(Trainer user) {
+    public UserCredentialsDTO create(Trainer user) {
         user.setTrainingType(trainingTypeService.findByName(user.getTrainingType().getTrainingTypeName()));
         return super.create(user);
     }

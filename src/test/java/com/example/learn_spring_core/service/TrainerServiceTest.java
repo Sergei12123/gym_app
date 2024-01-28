@@ -4,25 +4,38 @@ import com.example.learn_spring_core.TestsParent;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.TrainingType;
+import com.example.learn_spring_core.exception.IncorrectCredentialsException;
+import com.example.learn_spring_core.exception.UserNotAllowedToLoginException;
 import com.example.learn_spring_core.repository.TraineeRepository;
 import com.example.learn_spring_core.repository.TrainerRepository;
 import com.example.learn_spring_core.repository.UserRepository;
+import com.example.learn_spring_core.security.BruteForceProtectionService;
+import com.example.learn_spring_core.security.JwtService;
 import com.example.learn_spring_core.service.impl.TraineeServiceImpl;
 import com.example.learn_spring_core.service.impl.TrainerServiceImpl;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static com.example.learn_spring_core.utils.SampleCreator.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class TrainerServiceTest extends TestsParent {
@@ -36,20 +49,64 @@ class TrainerServiceTest extends TestsParent {
     @Mock
     private TrainingTypeService trainingTypeService;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private BruteForceProtectionService bruteForceProtectionService;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private JwtService jwtService;
+
     @InjectMocks
     private TrainerServiceImpl trainerService;
 
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
-        Field hack = TraineeServiceImpl.class.getSuperclass().getSuperclass().getDeclaredField("currentRepository");
+        Field hack = TrainerServiceImpl.class.getSuperclass().getSuperclass().getDeclaredField("currentRepository");
         hack.setAccessible(true);
         hack.set(trainerService, trainerRepository);
-
+        Field hack2 = TrainerServiceImpl.class.getSuperclass().getDeclaredField("passwordEncoder");
+        hack2.setAccessible(true);
+        hack2.set(trainerService, passwordEncoder);
+        Field hack3 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("bruteForceProtectionService");
+        hack3.setAccessible(true);
+        hack3.set(trainerService, bruteForceProtectionService);
+        Field hack4 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("authenticationManager");
+        hack4.setAccessible(true);
+        hack4.set(trainerService, authenticationManager);
+        Field hack5 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("jwtService");
+        hack5.setAccessible(true);
+        hack5.set(trainerService, jwtService);
         when(trainerRepository.save(any(Trainer.class))).thenAnswer(invocation -> {
             Trainer trainerArgument = invocation.getArgument(0);
             trainerArgument.setId(1L);
             return trainerArgument;
         });
+    }
+
+    @Test
+    void testLogin() {
+        String userName = "sampleUser";
+        String password = "samplePassword";
+        Authentication authentication = new UsernamePasswordAuthenticationToken(createSampleTrainee(true), password);
+        String expectedResult = "generatedToken";
+        when(bruteForceProtectionService.isAllowedToLogin(userName)).thenReturn(true);
+        when(authenticationManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
+        when(jwtService.generateToken(any(UserDetails.class))).thenReturn(expectedResult);
+        String result = trainerService.login(userName, password);
+        Assertions.assertEquals(expectedResult, result);
+
+        when(bruteForceProtectionService.isAllowedToLogin(userName)).thenReturn(true);
+        when(authenticationManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class))).thenThrow(BadCredentialsException.class);
+        assertThrows(IncorrectCredentialsException.class, () -> trainerService.login(userName, password));
+
+        when(bruteForceProtectionService.isAllowedToLogin(userName)).thenReturn(false);
+        when(bruteForceProtectionService.getTillForUsername(userName)).thenReturn(LocalDateTime.now().plusMinutes(15).toString());
+        assertThrows(UserNotAllowedToLoginException.class, () -> trainerService.login(userName, password));
     }
 
     @Test
@@ -134,10 +191,21 @@ class TrainerServiceTest extends TestsParent {
     void testChangePassword() {
         Trainer sampleTrainer = createSampleTrainer(true);
         when(trainerRepository.findByUserName(sampleTrainer.getUserName())).thenReturn(Optional.of(sampleTrainer));
-        when(trainerRepository.existsByUserNameAndPassword(sampleTrainer.getUserName(), sampleTrainer.getPassword())).thenReturn(true);
-
+        when(passwordEncoder.matches(sampleTrainer.getPassword(), sampleTrainer.getPassword())).thenReturn(true);
+        when(passwordEncoder.encode(anyString())).thenReturn("newEncodedPassword");
         trainerService.changePassword(sampleTrainer.getUserName(), sampleTrainer.getPassword(), "newPassword");
-        Assertions.assertEquals("newPassword", sampleTrainer.getPassword());
+        Assertions.assertEquals("newEncodedPassword", sampleTrainer.getPassword());
+
+        Trainer sampleTrainerNotFound = createSampleTrainer(true);
+        when(trainerRepository.findByUserName(sampleTrainer.getUserName())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> trainerService.changePassword(sampleTrainerNotFound.getUserName(), sampleTrainerNotFound.getPassword(), "newPassword"));
+
+        Trainer sampleTrainerIncorrectPass = createSampleTrainer(true);
+        when(trainerRepository.findByUserName(sampleTrainerIncorrectPass.getUserName())).thenReturn(Optional.of(sampleTrainerIncorrectPass));
+        when(passwordEncoder.matches(sampleTrainerIncorrectPass.getPassword(), sampleTrainerIncorrectPass.getPassword())).thenReturn(false);
+
+        assertThrows(IncorrectCredentialsException.class, () -> trainerService.changePassword(sampleTrainerIncorrectPass.getUserName(), sampleTrainerIncorrectPass.getPassword(), "newPassword"));
+
     }
 
     @Test
@@ -229,19 +297,6 @@ class TrainerServiceTest extends TestsParent {
         List<Trainer> result = trainerService.getNotAssignedToConcreteTraineeActiveTrainers(traineeUserName);
 
         Assertions.assertEquals(notAssignedTrainers, result);
-    }
-
-    @Test
-    void testLogin() {
-        String userName = "sampleUser";
-        String password = "samplePassword";
-        boolean expectedResult = true;
-
-        when(trainerRepository.existsByUserNameAndPassword(userName, password)).thenReturn(expectedResult);
-
-        boolean result = trainerService.login(userName, password);
-
-        Assertions.assertEquals(expectedResult, result);
     }
 
     @Test

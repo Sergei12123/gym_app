@@ -45,12 +45,12 @@ public class TrainingServiceImpl extends BaseServiceImpl<Training> implements Tr
     }
 
     public Training create(Training entity) {
-        Optional<Trainee> foundTrainee = traineeRepository.findByUserName(entity.getTrainee().getUserName());
-        Optional<Trainer> foundTrainer = trainerRepository.findByUserName(entity.getTrainer().getUserName());
+        Optional<Trainee> foundTrainee = traineeRepository.findByUserName(entity.getTrainee().getUsername());
+        Optional<Trainer> foundTrainer = trainerRepository.findByUserName(entity.getTrainer().getUsername());
         if (foundTrainee.isEmpty()) {
-            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(entity.getTrainee().getUserName()));
+            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(entity.getTrainee().getUsername()));
         } else if (foundTrainer.isEmpty()) {
-            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(entity.getTrainer().getUserName()));
+            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(entity.getTrainer().getUsername()));
         }
         entity.setTrainer(foundTrainer.get());
         entity.setTrainee(foundTrainee.get());
@@ -77,8 +77,8 @@ public class TrainingServiceImpl extends BaseServiceImpl<Training> implements Tr
     private List<Training> filterByTrainingFields(List<Training> trainingFullList, LocalDate dateFrom, LocalDate dateTo, String traineeUserName, String trainerUserName, TrainingType trainingType) {
         return trainingFullList.stream()
             .filter(training -> dateFrom == null || dateTo == null || training.getTrainingDate().isAfter(dateFrom) && training.getTrainingDate().isBefore(dateTo))
-            .filter(training -> traineeUserName == null || training.getTrainee().getUserName().equals(traineeUserName))
-            .filter(training -> trainerUserName == null || training.getTrainer().getUserName().equals(trainerUserName))
+            .filter(training -> traineeUserName == null || training.getTrainee().getUsername().equals(traineeUserName))
+            .filter(training -> trainerUserName == null || training.getTrainer().getUsername().equals(trainerUserName))
             .filter(training -> trainingType == null || training.getTrainingType().equals(trainingType))
             .toList();
     }

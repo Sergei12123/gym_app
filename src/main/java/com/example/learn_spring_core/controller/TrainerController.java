@@ -28,89 +28,83 @@ public class TrainerController {
 
     private final TrainerService trainerService;
 
-
     @Operation(summary = "Register trainer")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Success",
-            content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = UserCredentialsDTO.class))}),
-        @ApiResponse(responseCode = "409",
-            description = "It is not possible to register a new trainer because a trainee with this data already exists.",
-            content = @Content),
-        @ApiResponse(responseCode = "404",
-            description = "Unable to find a matching TrainingType with the provided trainingTypeName",
-            content = @Content)
+            @ApiResponse(responseCode = "200",
+                    description = "Success",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserCredentialsDTO.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "It is not possible to register a new trainer because a trainee with this data already exists.",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Unable to find a matching TrainingType with the provided trainingTypeName",
+                    content = @Content)
     })
     @PostMapping("/register")
     public ResponseEntity<UserCredentialsDTO> registerTrainer(@RequestParam(value = "firstName") final String firstName,
                                                               @RequestParam(value = "lastName") final String lastName,
                                                               @RequestParam(value = "trainingTypeName") final TrainingTypeName trainingTypeName) {
-        return ResponseEntity.ok(new UserCredentialsDTO(
-            trainerService.create(new Trainer(firstName, lastName, trainingTypeName))
-        ));
+        return ResponseEntity.ok(trainerService.create(new Trainer(firstName, lastName, trainingTypeName)));
     }
 
     @Operation(summary = "Login trainer")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Success",
-            content = @Content),
-        @ApiResponse(responseCode = "401",
-            description = "Trainer can't authorize with supplied userName or password",
-            content = @Content)
+            @ApiResponse(responseCode = "200",
+                    description = "Success",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "Trainer can't authorize with supplied userName or password",
+                    content = @Content)
     })
     @GetMapping("/login")
-    public ResponseEntity<Object> loginTrainer(@RequestParam(value = "userName") final String userName,
+    public ResponseEntity<String> loginTrainer(@RequestParam(value = "userName") final String userName,
                                                @RequestParam(value = "password") final String password) {
-        trainerService.login(userName, password);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(trainerService.login(userName, password));
     }
 
     @Operation(summary = "Get trainer profile by userName")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Success",
-            content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = TrainerProfileDTO.class))}),
-        @ApiResponse(responseCode = "404",
-            description = "Trainer does not exist with supplied userName",
-            content = @Content)
+            @ApiResponse(responseCode = "200",
+                    description = "Success",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TrainerProfileDTO.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Trainer does not exist with supplied userName",
+                    content = @Content)
     })
     @GetMapping("/profile")
     public ResponseEntity<TrainerProfileDTO> getTraineeProfile(@RequestParam(value = "userName") final String userName) {
         return ResponseEntity.ok(new TrainerProfileDTO(
-            trainerService.findByUserName(userName)
+                trainerService.findByUserName(userName)
         ));
     }
 
     @Operation(summary = "Change trainer password")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Success",
-            content = @Content),
-        @ApiResponse(responseCode = "401",
-            description = "Trainer can't authorize with supplied userName or password",
-            content = @Content)
+            @ApiResponse(responseCode = "200",
+                    description = "Success",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "Trainer can't authorize with supplied userName or password",
+                    content = @Content)
     })
     @PutMapping("/changePassword")
-    public ResponseEntity<Object> changePasswordTrainer(@RequestParam(value = "userName") final String userName,
-                                                        @RequestParam(value = "oldPassword") final String oldPassword,
-                                                        @RequestParam(value = "newPassport") final String newPassport) {
+    public void changePasswordTrainer(@RequestParam(value = "userName") final String userName,
+                                      @RequestParam(value = "oldPassword") final String oldPassword,
+                                      @RequestParam(value = "newPassport") final String newPassport) {
         trainerService.changePassword(userName, oldPassword, newPassport);
-        return ResponseEntity.ok().build();
-
     }
 
     @Operation(summary = "Update trainer profile")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Success",
-            content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = TrainerProfileDTO.class))}),
-        @ApiResponse(responseCode = "404",
-            description = "Trainer does not exist with supplied userName",
-            content = @Content)
+            @ApiResponse(responseCode = "200",
+                    description = "Success",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TrainerProfileDTO.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Trainer does not exist with supplied userName",
+                    content = @Content)
     })
     @PutMapping
     public ResponseEntity<TrainerProfileDTO> updateTrainerProfile(@RequestParam(value = "userName") final String userName,
@@ -119,45 +113,44 @@ public class TrainerController {
                                                                   @RequestParam(value = "trainingType") final TrainingType trainingType,
                                                                   @RequestParam(value = "isActive") final boolean isActive) {
         return ResponseEntity.ok(new TrainerProfileDTO(
-            trainerService.update(new Trainer(userName, firstName, lastName, trainingType, isActive))
+                trainerService.update(new Trainer(userName, firstName, lastName, trainingType, isActive))
         ));
 
     }
 
     @Operation(summary = "Get not assigned for trainee trainers")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Success",
-            content = {@Content(mediaType = "application/json",
-                array = @ArraySchema(schema = @Schema(implementation = NotAssignedTrainerProfileDTO.class)))}),
-        @ApiResponse(responseCode = "404",
-            description = "Trainee does not exist with supplied userName",
-            content = @Content)
+            @ApiResponse(responseCode = "200",
+                    description = "Success",
+                    content = {@Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = NotAssignedTrainerProfileDTO.class)))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Trainee does not exist with supplied userName",
+                    content = @Content)
     })
     @GetMapping("/trainers")
     public ResponseEntity<List<NotAssignedTrainerProfileDTO>> getNotAssignedForTraineeTrainers(@RequestParam(value = "traineeUserName") final String traineeUserName) {
 
         return ResponseEntity.ok(
-            trainerService.getNotAssignedToConcreteTraineeActiveTrainers(traineeUserName).stream()
-                .map(NotAssignedTrainerProfileDTO::new).toList()
+                trainerService.getNotAssignedToConcreteTraineeActiveTrainers(traineeUserName).stream()
+                        .map(NotAssignedTrainerProfileDTO::new).toList()
         );
 
     }
 
     @Operation(summary = "Set trainer active status")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Success",
-            content = @Content),
-        @ApiResponse(responseCode = "404",
-            description = "Trainer does not exist with supplied userName",
-            content = @Content)
+            @ApiResponse(responseCode = "200",
+                    description = "Success",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Trainer does not exist with supplied userName",
+                    content = @Content)
     })
     @PatchMapping("/setActive")
-    public ResponseEntity<Object> setActiveTrainer(@RequestParam final String userName,
-                                                   @RequestParam final boolean isActive) {
+    public void setActiveTrainer(@RequestParam(value = "userName") final String userName,
+                                 @RequestParam(value = "isActive") final boolean isActive) {
         trainerService.setActive(userName, isActive);
-        return ResponseEntity.ok().build();
     }
 
 }

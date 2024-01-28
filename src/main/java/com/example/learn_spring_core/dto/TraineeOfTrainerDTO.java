@@ -12,7 +12,7 @@ public class TraineeOfTrainerDTO {
     private String lastName;
 
     public TraineeOfTrainerDTO(Trainee trainee) {
-        this.userName = trainee.getUserName();
+        this.userName = trainee.getUsername();
         this.firstName = trainee.getFirstName();
         this.lastName = trainee.getLastName();
     }

@@ -1,16 +1,27 @@
 package com.example.learn_spring_core.service.impl;
 
 import com.example.learn_spring_core.component.TransactionIdHolder;
+import com.example.learn_spring_core.dto.UserCredentialsDTO;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
 import com.example.learn_spring_core.entity.User;
 import com.example.learn_spring_core.exception.IncorrectCredentialsException;
 import com.example.learn_spring_core.exception.UserAlreadyExistsException;
+import com.example.learn_spring_core.exception.UserNotAllowedToLoginException;
 import com.example.learn_spring_core.repository.UserRepository;
+import com.example.learn_spring_core.security.BruteForceProtectionService;
+import com.example.learn_spring_core.security.JwtService;
 import com.example.learn_spring_core.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +37,18 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     public static final String USER_NOT_FOUND_EX = "User with username %s not found";
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private BruteForceProtectionService bruteForceProtectionService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
 
 
     @Override
@@ -50,11 +73,11 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     }
 
     @Override
-    public void changePassword(String userName, String oldPassword, String newPassport) {
+    public void changePassword(String userName, String oldPassword, String newPassword) {
         Optional<T> user = ((UserRepository<T>) currentRepository).findByUserName(userName);
         if (user.isPresent()) {
-            if (((UserRepository<T>) currentRepository).existsByUserNameAndPassword(userName, oldPassword)) {
-                user.get().setPassword(newPassport);
+            if (passwordEncoder.matches(oldPassword, user.get().getPassword())) {
+                user.get().setPassword(passwordEncoder.encode(newPassword));
             } else {
                 throw new IncorrectCredentialsException();
             }
@@ -99,36 +122,49 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     @Override
     public T findByUserName(String userName) {
         return ((UserRepository<T>) currentRepository).findByUserName(userName)
-            .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName)));
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName)));
     }
 
     @Override
-    public T create(T user) {
+    public UserCredentialsDTO create(T user) {
         if (((UserRepository<T>) currentRepository).existsByFirstNameAndLastNameAndIsActiveTrue(user.getFirstName(), user.getLastName())) {
             throw new UserAlreadyExistsException();
         }
 
         user.setUserName(generateUsername(user.getFirstName(), user.getLastName()));
-        user.setPassword(generateRandomPassword());
+        String password = generateRandomPassword();
+        user.setPassword(passwordEncoder.encode(password));
         user.setIsActive(true);
         currentRepository.save(user);
-        return user;
+        return UserCredentialsDTO.builder()
+                .username(user.getUsername())
+                .password(password)
+                .build();
     }
 
     @Override
     public T update(T user) {
-        if (!((UserRepository<T>) currentRepository).existsByUserName(user.getUserName())) {
-            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(user.getUserName()));
+        if (!((UserRepository<T>) currentRepository).existsByUserName(user.getUsername())) {
+            throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(user.getUsername()));
         }
         return currentRepository.save(user);
     }
 
     @Override
-    public boolean login(String userName, String password) {
-        if (((UserRepository<?>) currentRepository).existsByUserNameAndPassword(userName, password)) {
-            return true;
-        } else {
-            throw new IncorrectCredentialsException();
+    public String login(String userName, String password) {
+        try {
+            if (bruteForceProtectionService.isAllowedToLogin(userName)) {
+                Authentication authenticate = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(userName, password));
+                bruteForceProtectionService.resetBruteForceCounter(userName);
+                return jwtService.generateToken((UserDetails) authenticate.getPrincipal());
+            } else {
+                throw new UserNotAllowedToLoginException("User" + userName + " cant login till " + bruteForceProtectionService.getTillForUsername(userName));
+
+            }
+        } catch (BadCredentialsException exception) {
+            bruteForceProtectionService.registerLoginFailure(userName);
+            throw new IncorrectCredentialsException(userName);
         }
     }
 

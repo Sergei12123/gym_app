@@ -3,19 +3,31 @@ package com.example.learn_spring_core.service;
 import com.example.learn_spring_core.TestsParent;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
+import com.example.learn_spring_core.exception.IncorrectCredentialsException;
+import com.example.learn_spring_core.exception.UserNotAllowedToLoginException;
 import com.example.learn_spring_core.repository.TraineeRepository;
 import com.example.learn_spring_core.repository.TrainerRepository;
 import com.example.learn_spring_core.repository.UserRepository;
+import com.example.learn_spring_core.security.BruteForceProtectionService;
+import com.example.learn_spring_core.security.JwtService;
 import com.example.learn_spring_core.service.impl.TraineeServiceImpl;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +35,7 @@ import java.util.Optional;
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainee;
 import static com.example.learn_spring_core.utils.SampleCreator.createSampleTrainer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class TraineeServiceTest extends TestsParent {
@@ -33,6 +46,18 @@ class TraineeServiceTest extends TestsParent {
     @Mock
     private TrainerRepository trainerRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private BruteForceProtectionService bruteForceProtectionService;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private JwtService jwtService;
+
     @InjectMocks
     private TraineeServiceImpl traineeService;
 
@@ -41,6 +66,19 @@ class TraineeServiceTest extends TestsParent {
         Field hack = TraineeServiceImpl.class.getSuperclass().getSuperclass().getDeclaredField("currentRepository");
         hack.setAccessible(true);
         hack.set(traineeService, traineeRepository);
+        Field hack2 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("passwordEncoder");
+        hack2.setAccessible(true);
+        hack2.set(traineeService, passwordEncoder);
+        Field hack3 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("bruteForceProtectionService");
+        hack3.setAccessible(true);
+        hack3.set(traineeService, bruteForceProtectionService);
+        Field hack4 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("authenticationManager");
+        hack4.setAccessible(true);
+        hack4.set(traineeService, authenticationManager);
+        Field hack5 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("jwtService");
+        hack5.setAccessible(true);
+        hack5.set(traineeService, jwtService);
+
         when(traineeRepository.save(any(Trainee.class))).thenAnswer(invocation -> {
             Trainee traineeArgument = invocation.getArgument(0);
             traineeArgument.setId(1L);
@@ -55,6 +93,27 @@ class TraineeServiceTest extends TestsParent {
     }
 
     @Test
+    void testLogin() {
+        String userName = "sampleUser";
+        String password = "samplePassword";
+        Authentication authentication = new UsernamePasswordAuthenticationToken(createSampleTrainee(true), password);
+        String expectedResult = "generatedToken";
+        when(bruteForceProtectionService.isAllowedToLogin(userName)).thenReturn(true);
+        when(authenticationManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
+        when(jwtService.generateToken(any(UserDetails.class))).thenReturn(expectedResult);
+        String result = traineeService.login(userName, password);
+        Assertions.assertEquals(expectedResult, result);
+
+        when(bruteForceProtectionService.isAllowedToLogin(userName)).thenReturn(true);
+        when(authenticationManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class))).thenThrow(BadCredentialsException.class);
+        assertThrows(IncorrectCredentialsException.class, () -> traineeService.login(userName, password));
+
+        when(bruteForceProtectionService.isAllowedToLogin(userName)).thenReturn(false);
+        when(bruteForceProtectionService.getTillForUsername(userName)).thenReturn(LocalDateTime.now().plusMinutes(15).toString());
+        assertThrows(UserNotAllowedToLoginException.class, () -> traineeService.login(userName, password));
+    }
+
+    @Test
     void testCreateTrainee() {
 
         Trainee trainee = new Trainee();
@@ -64,7 +123,7 @@ class TraineeServiceTest extends TestsParent {
         trainee.setAddress("123 Main St");
 
         when(traineeRepository.existsByUserName(Mockito.anyString())).thenReturn(false);
-
+        when(passwordEncoder.encode(trainee.getPassword())).thenReturn("encodedPassword");
         traineeService.create(trainee);
         Mockito.verify(traineeRepository, times(1)).save(Mockito.any(Trainee.class));
     }
@@ -160,14 +219,23 @@ class TraineeServiceTest extends TestsParent {
 
     @Test
     void testChangePassword() {
-        Long traineeId = 1L;
         Trainee sampleTrainee = createSampleTrainee(true);
-        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(sampleTrainee));
         when(traineeRepository.findByUserName(sampleTrainee.getUserName())).thenReturn(Optional.of(sampleTrainee));
-        when(traineeRepository.existsByUserNameAndPassword(sampleTrainee.getUserName(), sampleTrainee.getPassword())).thenReturn(true);
+        when(passwordEncoder.matches(sampleTrainee.getPassword(), sampleTrainee.getPassword())).thenReturn(true);
+        when(passwordEncoder.encode(anyString())).thenReturn("newEncodedPassword");
         traineeService.changePassword(sampleTrainee.getUserName(), sampleTrainee.getPassword(), "newPassword");
+        Assertions.assertEquals("newEncodedPassword", sampleTrainee.getPassword());
 
-        Assertions.assertEquals("newPassword", sampleTrainee.getPassword());
+        Trainee sampleTraineeNotFound = createSampleTrainee(true);
+        when(traineeRepository.findByUserName(sampleTrainee.getUserName())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> traineeService.changePassword(sampleTraineeNotFound.getUserName(), sampleTraineeNotFound.getPassword(), "newPassword"));
+
+        Trainee sampleTraineeIncorrectPass = createSampleTrainee(true);
+        when(traineeRepository.findByUserName(sampleTraineeIncorrectPass.getUserName())).thenReturn(Optional.of(sampleTraineeIncorrectPass));
+        when(passwordEncoder.matches(sampleTraineeIncorrectPass.getPassword(), sampleTraineeIncorrectPass.getPassword())).thenReturn(false);
+
+        assertThrows(IncorrectCredentialsException.class, () -> traineeService.changePassword(sampleTraineeIncorrectPass.getUserName(), sampleTraineeIncorrectPass.getPassword(), "newPassword"));
+
     }
 
     @Test
@@ -223,19 +291,6 @@ class TraineeServiceTest extends TestsParent {
         traineeService.removeTrainerFromTrainee(1L, 2L);
 
         Assertions.assertTrue(trainee.getTrainers().isEmpty());
-    }
-
-    @Test
-    void testLogin() {
-        String userName = "sampleUser";
-        String password = "samplePassword";
-        boolean expectedResult = true;
-
-        when(traineeRepository.existsByUserNameAndPassword(userName, password)).thenReturn(expectedResult);
-
-        boolean result = traineeService.login(userName, password);
-
-        Assertions.assertEquals(expectedResult, result);
     }
 
     @Test

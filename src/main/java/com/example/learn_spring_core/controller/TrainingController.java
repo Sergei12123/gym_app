@@ -82,15 +82,13 @@ public class TrainingController {
             content = @Content)
     })
     @PostMapping("/add")
-    public ResponseEntity<Object> addTraining(@RequestParam(value = "traineeUserName") final String traineeUserName,
+    public void addTraining(@RequestParam(value = "traineeUserName") final String traineeUserName,
                                               @RequestParam(value = "trainerUserName") final String trainerUserName,
                                               @RequestParam(value = "trainingName") final String trainingName,
                                               @RequestParam(value = "trainingDate") final LocalDate trainingDate,
                                               @RequestParam(value = "trainingDuration") final Long trainingDuration) {
 
         trainingService.create(new Training(traineeUserName, trainerUserName, trainingName, trainingDate, trainingDuration));
-        return ResponseEntity.ok().build();
-
     }
 
 

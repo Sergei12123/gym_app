@@ -55,10 +55,10 @@ public class TraineeServiceImpl extends UserServiceImpl<Trainee> implements Trai
         if (trainee.isPresent()) {
             Trainee traineeObject = trainee.get();
             traineeObject.getTrainers().stream()
-                .filter(trainer -> !trainerUserNames.contains(trainer.getUserName()))
+                .filter(trainer -> !trainerUserNames.contains(trainer.getUsername()))
                 .forEach(trainer -> removeTrainerFromTrainee(traineeObject.getId(), trainer.getId()));
             trainerUserNames.stream()
-                .filter(trainerUserName -> traineeObject.getTrainers().stream().noneMatch(trainer -> trainer.getUserName().equals(trainerUserName)))
+                .filter(trainerUserName -> traineeObject.getTrainers().stream().noneMatch(trainer -> trainer.getUsername().equals(trainerUserName)))
                 .forEach(trainerUserName -> addTrainerToTrainee(trainerUserName, traineeObject));
             return traineeObject.getTrainers().stream().map(TrainerOfTraineeDTO::new).toList();
         } else {

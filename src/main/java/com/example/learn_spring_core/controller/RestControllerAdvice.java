@@ -1,7 +1,8 @@
-package com.example.learn_spring_core.component;
+package com.example.learn_spring_core.controller;
 
 import com.example.learn_spring_core.exception.IncorrectCredentialsException;
 import com.example.learn_spring_core.exception.UserAlreadyExistsException;
+import com.example.learn_spring_core.exception.UserNotAllowedToLoginException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
-public class RestExceptionHandler extends ResponseEntityExceptionHandler {
+public class RestControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({EntityNotFoundException.class})
     protected ResponseEntity<String> handleEntityNotFoundEx(EntityNotFoundException ex) {
@@ -24,7 +25,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({IncorrectCredentialsException.class})
     protected ResponseEntity<String> handleIncorrectCredentialsEx(IncorrectCredentialsException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bad credentials for" + ex.getMessage());
+    }
+
+    @ExceptionHandler({UserNotAllowedToLoginException.class})
+    protected ResponseEntity<String> handleUserNotAllowedToLoginEx(UserNotAllowedToLoginException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 
 }

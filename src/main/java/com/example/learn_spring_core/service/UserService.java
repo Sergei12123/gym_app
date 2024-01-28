@@ -1,5 +1,6 @@
 package com.example.learn_spring_core.service;
 
+import com.example.learn_spring_core.dto.UserCredentialsDTO;
 import com.example.learn_spring_core.entity.User;
 
 public interface UserService<T extends User> extends BaseService<T> {
@@ -10,7 +11,7 @@ public interface UserService<T extends User> extends BaseService<T> {
      * @param user user without userName and password
      * @return new user with id
      */
-    T create(T user);
+    UserCredentialsDTO create(T user);
 
     /**
      * Update existing user
@@ -41,9 +42,9 @@ public interface UserService<T extends User> extends BaseService<T> {
      *
      * @param userName    the username of the user
      * @param oldPassword the user's current password
-     * @param newPassport the new password to set for the user
+     * @param newPassword the new password to set for the user
      */
-    void changePassword(String userName, String oldPassword, String newPassport);
+    void changePassword(String userName, String oldPassword, String newPassword);
 
     /**
      * Set user active to true
@@ -87,9 +88,9 @@ public interface UserService<T extends User> extends BaseService<T> {
      *
      * @param userName username
      * @param password password
-     * @return true if user exists
+     * @return generated JWT token
      */
-    boolean login(String userName, String password);
+    String login(String userName, String password);
 
     /**
      * Check if user exist with supplied firstName and lastName
