@@ -1,6 +1,7 @@
 package com.example.learn_spring_core.service.impl;
 
 import com.example.learn_spring_core.dto.TrainerOfTraineeDTO;
+import com.example.learn_spring_core.dto.enums.ActionType;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.repository.TraineeRepository;
@@ -32,6 +33,7 @@ public class TraineeServiceImpl extends UserServiceImpl<Trainee> implements Trai
         return Trainee.class.getSimpleName();
     }
 
+    @Override
     public void addTrainerToTrainee(String trainerUserName, @NonNull Trainee trainee) {
         Optional<Trainer> trainerOptional = trainerRepository.findByUserName(trainerUserName);
         if (trainerOptional.isEmpty()) {
@@ -45,8 +47,13 @@ public class TraineeServiceImpl extends UserServiceImpl<Trainee> implements Trai
 
     @Override
     public void removeTrainerFromTrainee(Long traineeId, Long trainerId) {
-        Trainee trainee = this.getById(traineeId);
-        trainee.getTrainers().removeIf(trainer -> trainer.getId().equals(trainerId));
+        trainerRepository.findById(trainerId).ifPresent(trainer -> {
+            trainer.getTrainings()
+                .stream()
+                .filter(training -> training.getTrainee().getId().equals(traineeId))
+                .forEach(training -> trainingItemService.updateTrainingItem(training, ActionType.DELETE));
+            this.getById(traineeId).getTrainers().remove(trainer);
+        });
     }
 
     @Override

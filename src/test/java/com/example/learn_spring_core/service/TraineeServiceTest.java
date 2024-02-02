@@ -1,6 +1,7 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
+import com.example.learn_spring_core.client.service.TrainingItemService;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.exception.IncorrectCredentialsException;
@@ -47,6 +48,9 @@ class TraineeServiceTest extends TestsParent {
     private TrainerRepository trainerRepository;
 
     @Mock
+    private TrainingItemService trainingItemService;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
@@ -78,7 +82,9 @@ class TraineeServiceTest extends TestsParent {
         Field hack5 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("jwtService");
         hack5.setAccessible(true);
         hack5.set(traineeService, jwtService);
-
+        Field hack6 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("trainingItemService");
+        hack6.setAccessible(true);
+        hack6.set(traineeService, trainingItemService);
         when(traineeRepository.save(any(Trainee.class))).thenAnswer(invocation -> {
             Trainee traineeArgument = invocation.getArgument(0);
             traineeArgument.setId(1L);
@@ -287,6 +293,7 @@ class TraineeServiceTest extends TestsParent {
         trainee.getTrainers().add(trainer);
 
         when(traineeRepository.findById(1L)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer));
 
         traineeService.removeTrainerFromTrainee(1L, 2L);
 

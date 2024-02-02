@@ -23,7 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/trainee")
 @Tag(name = "Trainee", description = "Trainee management APIs")
-
 public class TraineeController {
 
     private final TraineeService traineeService;

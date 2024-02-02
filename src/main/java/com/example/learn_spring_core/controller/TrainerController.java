@@ -1,7 +1,9 @@
 package com.example.learn_spring_core.controller;
 
+import com.example.learn_spring_core.client.service.TrainingItemService;
 import com.example.learn_spring_core.dto.NotAssignedTrainerProfileDTO;
 import com.example.learn_spring_core.dto.TrainerProfileDTO;
+import com.example.learn_spring_core.dto.TrainerWorkloadDTO;
 import com.example.learn_spring_core.dto.UserCredentialsDTO;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.TrainingType;
@@ -27,6 +29,8 @@ import java.util.List;
 public class TrainerController {
 
     private final TrainerService trainerService;
+
+    private final TrainingItemService trainingItemService;
 
     @Operation(summary = "Register trainer")
     @ApiResponses(value = {
@@ -151,6 +155,21 @@ public class TrainerController {
     public void setActiveTrainer(@RequestParam(value = "userName") final String userName,
                                  @RequestParam(value = "isActive") final boolean isActive) {
         trainerService.setActive(userName, isActive);
+    }
+
+    @Operation(summary = "Get trainer workload")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Success",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TrainerWorkloadDTO.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Trainer does not exist with supplied userName",
+                    content = @Content)
+    })
+    @GetMapping("/workload")
+    public TrainerWorkloadDTO getTrainerWorkload(@RequestParam(value = "userName") final String userName) {
+        return trainingItemService.getTrainerWorkload(userName);
     }
 
 }

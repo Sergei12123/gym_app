@@ -1,7 +1,8 @@
 package com.example.learn_spring_core.service.impl;
 
-import com.example.learn_spring_core.component.TransactionIdHolder;
+import com.example.learn_spring_core.client.service.TrainingItemService;
 import com.example.learn_spring_core.dto.UserCredentialsDTO;
+import com.example.learn_spring_core.dto.enums.ActionType;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
@@ -9,6 +10,7 @@ import com.example.learn_spring_core.entity.User;
 import com.example.learn_spring_core.exception.IncorrectCredentialsException;
 import com.example.learn_spring_core.exception.UserAlreadyExistsException;
 import com.example.learn_spring_core.exception.UserNotAllowedToLoginException;
+import com.example.learn_spring_core.repository.TrainingRepository;
 import com.example.learn_spring_core.repository.UserRepository;
 import com.example.learn_spring_core.security.BruteForceProtectionService;
 import com.example.learn_spring_core.security.JwtService;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -37,6 +40,12 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     public static final String USER_NOT_FOUND_EX = "User with username %s not found";
+
+    @Autowired
+    protected TrainingRepository trainingRepository;
+
+    @Autowired
+    protected TrainingItemService trainingItemService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -56,7 +65,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
         String baseUsername = firstName + "." + lastName;
         Long suffix = ((UserRepository<?>) currentRepository).countByUserNameStartsWith(baseUsername);
         String username = baseUsername + (suffix > 0 ? String.valueOf(suffix) : "");
-        log.info("Transaction: {}. For the {} {} {}, has been generated the nickname {}", TransactionIdHolder.getTransactionId(), getCurrentEntityName(), firstName, lastName, username);
+        log.info("For the {} {} {}, has been generated the nickname {}", getCurrentEntityName(), firstName, lastName, username);
         return username;
     }
 
@@ -68,7 +77,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
             int randomIndex = random.nextInt(CHARACTERS.length());
             password.append(CHARACTERS.charAt(randomIndex));
         }
-        log.info("Transaction: {}. Password was generated for the {}", TransactionIdHolder.getTransactionId(), getCurrentEntityName());
+        log.info("Password was generated for the {}", getCurrentEntityName());
         return password.toString();
     }
 
@@ -111,7 +120,15 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     @Override
     public void deleteByUserName(String userName) {
         Optional<T> user = ((UserRepository<T>) currentRepository).findByUserName(userName);
+
         if (user.isPresent()) {
+            List<Training> trainings;
+            if (user.get() instanceof Trainee) {
+                trainings = trainingRepository.findByTrainee_UserName(userName);
+            } else {
+                trainings = trainingRepository.findByTrainer_UserName(userName);
+            }
+            trainings.forEach(training -> trainingItemService.updateTrainingItem(training, ActionType.DELETE));
             currentRepository.delete(user.get());
         } else {
             throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName));
@@ -122,7 +139,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     @Override
     public T findByUserName(String userName) {
         return ((UserRepository<T>) currentRepository).findByUserName(userName)
-                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName)));
+            .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName)));
     }
 
     @Override
@@ -137,9 +154,9 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
         user.setIsActive(true);
         currentRepository.save(user);
         return UserCredentialsDTO.builder()
-                .username(user.getUsername())
-                .password(password)
-                .build();
+            .username(user.getUsername())
+            .password(password)
+            .build();
     }
 
     @Override
@@ -155,7 +172,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
         try {
             if (bruteForceProtectionService.isAllowedToLogin(userName)) {
                 Authentication authenticate = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(userName, password));
+                    new UsernamePasswordAuthenticationToken(userName, password));
                 bruteForceProtectionService.resetBruteForceCounter(userName);
                 return jwtService.generateToken((UserDetails) authenticate.getPrincipal());
             } else {
@@ -182,6 +199,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
         training.setTrainingDuration(1L);
         trainee.getTrainings().add(training);
         trainer.getTrainings().add(training);
+        trainingItemService.updateTrainingItem(training, ActionType.ADD);
     }
 
 }

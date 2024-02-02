@@ -6,9 +6,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -21,6 +24,12 @@ import java.util.stream.Collectors;
 public class JwtServiceImpl implements JwtService {
     @Value("${token.signing.key}")
     private String jwtSigningKey;
+
+    private final UserDetailsService userDetailsService;
+
+    public JwtServiceImpl(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
     public String extractUserName(String token) {
@@ -74,5 +83,20 @@ public class JwtServiceImpl implements JwtService {
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSigningKey);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    @Override
+    public boolean checkBearer(String bearerToken) {
+        if (StringUtils.isEmpty(bearerToken) || !StringUtils.startsWith(bearerToken, "Bearer ")) {
+            return false;
+        }
+        String jwt = bearerToken.substring(7);
+        String username = extractUserName(jwt);
+        if (StringUtils.isNotEmpty(username)
+            && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            return isTokenValid(jwt, userDetails);
+        }
+        return false;
     }
 }

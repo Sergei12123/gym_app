@@ -1,5 +1,6 @@
 package com.example.learn_spring_core.controller;
 
+import com.example.learn_spring_core.client.TrainingItemClient;
 import com.example.learn_spring_core.dto.TraineeTrainingProfileDTO;
 import com.example.learn_spring_core.dto.TrainerTrainingProfileDTO;
 import com.example.learn_spring_core.entity.Training;
@@ -26,6 +27,7 @@ import java.util.List;
 public class TrainingController {
 
     private final TrainingService trainingService;
+    private final TrainingItemClient trainingItemClient;
 
     @Operation(summary = "Get trainee training list")
     @ApiResponses(value = {
@@ -83,11 +85,10 @@ public class TrainingController {
     })
     @PostMapping("/add")
     public void addTraining(@RequestParam(value = "traineeUserName") final String traineeUserName,
-                                              @RequestParam(value = "trainerUserName") final String trainerUserName,
-                                              @RequestParam(value = "trainingName") final String trainingName,
-                                              @RequestParam(value = "trainingDate") final LocalDate trainingDate,
-                                              @RequestParam(value = "trainingDuration") final Long trainingDuration) {
-
+                            @RequestParam(value = "trainerUserName") final String trainerUserName,
+                            @RequestParam(value = "trainingName") final String trainingName,
+                            @RequestParam(value = "trainingDate") final LocalDate trainingDate,
+                            @RequestParam(value = "trainingDuration") final Long trainingDuration) {
         trainingService.create(new Training(traineeUserName, trainerUserName, trainingName, trainingDate, trainingDuration));
     }
 

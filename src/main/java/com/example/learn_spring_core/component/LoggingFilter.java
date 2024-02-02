@@ -21,20 +21,19 @@ public class LoggingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String transactionId = UUID.randomUUID().toString();
-        logTransactionInfo(transactionId, request);
-        TransactionIdHolder.setTransactionId(transactionId);
+        logTransactionInfo(request);
 
         filterChain.doFilter(request, response);
 
-        logTransactionCompletionInfo(transactionId, response);
+        logTransactionCompletionInfo(response);
     }
 
-    private void logTransactionInfo(String transactionId, HttpServletRequest request) {
-        log.info("Transaction {} started for endpoint {}", transactionId, request.getRequestURI());
+    private void logTransactionInfo(HttpServletRequest request) {
+        log.info("Send {} request for endpoint {}",request.getMethod(), request.getRequestURI());
     }
 
-    private void logTransactionCompletionInfo(String transactionId, HttpServletResponse response) {
-        log.info("Transaction {} completed with status {}", transactionId, response.getStatus());
+    private void logTransactionCompletionInfo(HttpServletResponse response) {
+        log.info("Request completed with status {}",response.getStatus());
+
     }
 }

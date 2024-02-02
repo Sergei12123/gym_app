@@ -4,6 +4,7 @@ import com.example.learn_spring_core.TestsParent;
 import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 import com.example.learn_spring_core.repository.TrainingTypeRepository;
+import com.example.learn_spring_core.service.impl.TraineeServiceImpl;
 import com.example.learn_spring_core.service.impl.TrainingTypeServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +30,10 @@ class TrainingTypeServiceTest extends TestsParent {
     private TrainingTypeServiceImpl trainingTypeService;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
+        Field hack = TrainingTypeServiceImpl.class.getSuperclass().getDeclaredField("currentRepository");
+        hack.setAccessible(true);
+        hack.set(trainingTypeService, trainingTypeRepository);
         when(trainingTypeRepository.save(any(TrainingType.class))).thenAnswer(invocation -> {
             TrainingType trainingTypeArgument = invocation.getArgument(0);
             trainingTypeArgument.setId(1L);

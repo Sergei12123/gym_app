@@ -1,5 +1,7 @@
 package com.example.learn_spring_core.service.impl;
 
+import com.example.learn_spring_core.client.service.TrainingItemService;
+import com.example.learn_spring_core.dto.enums.ActionType;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
@@ -23,10 +25,14 @@ public class TrainingServiceImpl extends BaseServiceImpl<Training> implements Tr
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
 
+    private final TrainingItemService trainingItemService;
+
     public TrainingServiceImpl(TraineeRepository traineeRepository,
-                               TrainerRepository trainerRepository) {
+                               TrainerRepository trainerRepository,
+                               TrainingItemService trainingItemService) {
         this.traineeRepository = traineeRepository;
         this.trainerRepository = trainerRepository;
+        this.trainingItemService = trainingItemService;
     }
 
     @Override
@@ -44,6 +50,7 @@ public class TrainingServiceImpl extends BaseServiceImpl<Training> implements Tr
         return ((TrainingRepository) currentRepository).findByTrainer_UserNameAndTrainingName(trainerUserName, trainingName);
     }
 
+    @Override
     public Training create(Training entity) {
         Optional<Trainee> foundTrainee = traineeRepository.findByUserName(entity.getTrainee().getUsername());
         Optional<Trainer> foundTrainer = trainerRepository.findByUserName(entity.getTrainer().getUsername());
@@ -55,6 +62,7 @@ public class TrainingServiceImpl extends BaseServiceImpl<Training> implements Tr
         entity.setTrainer(foundTrainer.get());
         entity.setTrainee(foundTrainee.get());
         currentRepository.save(entity);
+        trainingItemService.updateTrainingItem(entity, ActionType.ADD);
         return entity;
     }
 

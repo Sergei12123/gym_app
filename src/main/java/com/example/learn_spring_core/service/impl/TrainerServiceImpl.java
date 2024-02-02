@@ -1,10 +1,12 @@
 package com.example.learn_spring_core.service.impl;
 
 import com.example.learn_spring_core.dto.UserCredentialsDTO;
+import com.example.learn_spring_core.dto.enums.ActionType;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.repository.TraineeRepository;
 import com.example.learn_spring_core.repository.TrainerRepository;
+import com.example.learn_spring_core.repository.TrainingRepository;
 import com.example.learn_spring_core.service.TrainerService;
 import com.example.learn_spring_core.service.TrainingTypeService;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,9 +21,11 @@ public class TrainerServiceImpl extends UserServiceImpl<Trainer> implements Trai
 
     private final TrainingTypeService trainingTypeService;
 
-    public TrainerServiceImpl(TraineeRepository traineeRepository, TrainingTypeService trainingTypeService) {
+    public TrainerServiceImpl(TraineeRepository traineeRepository, TrainingTypeService trainingTypeService,
+                              TrainingRepository trainingRepository) {
         this.traineeRepository = traineeRepository;
         this.trainingTypeService = trainingTypeService;
+        this.trainingRepository = trainingRepository;
     }
 
     @Override
@@ -57,8 +61,14 @@ public class TrainerServiceImpl extends UserServiceImpl<Trainer> implements Trai
 
     @Override
     public void removeTraineeFromTrainer(Long trainerId, Long traineeId) {
-        Trainer trainer = this.getById(trainerId);
-        trainer.getTrainees().removeIf(trainee -> trainee.getId().equals(traineeId));
+        traineeRepository.findById(traineeId).ifPresent(trainee -> {
+            trainee.getTrainings()
+                .stream()
+                .filter(training -> training.getTrainer().getId().equals(trainerId))
+                .forEach(training -> trainingItemService.updateTrainingItem(training, ActionType.DELETE));
+            this.getById(trainerId).getTrainees().remove(trainee);
+        });
+
     }
 
     @Override

@@ -40,18 +40,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers("/trainee/register",
-                                "/trainer/register",
-                                "/trainer/login",
-                                "/trainee/login",
-                                "/swagger-ui/**","/v3/api-docs/**").permitAll()
-                        .anyRequest().authenticated())
-                .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(loggingFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            .cors(Customizer.withDefaults())
+            .authorizeHttpRequests(request -> request
+                .requestMatchers("/trainee/register",
+                    "/trainer/register",
+                    "/trainer/login",
+                    "/trainee/login",
+                    "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .anyRequest().authenticated())
+            .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(loggingFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -69,16 +69,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080","http://127.0.0.1:8080"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATH", "DELETE"));
         configuration.setAllowedHeaders(List.of("Authorization"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

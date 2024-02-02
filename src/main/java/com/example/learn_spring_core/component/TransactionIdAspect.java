@@ -14,16 +14,14 @@ public class TransactionIdAspect {
 
     @Before("execution(* com.example.learn_spring_core.service.*.*(..))")
     public void beforeServiceMethod(JoinPoint joinPoint) {
-        log.info("Transaction: {}. Attempting to execute a method {} in the {} class. ",
-            TransactionIdHolder.getTransactionId(),
+        log.info("Attempting to execute a method {} in the {} class. ",
             joinPoint.getSignature().getName(),
             joinPoint.getTarget().getClass().getSimpleName());
     }
 
     @After("execution(* com.example.learn_spring_core.service.*.*(..))")
     public void afterServiceMethod(JoinPoint joinPoint) {
-        log.info("Transaction: {}. The {} method in the {} class has been successfully executed.. ",
-            TransactionIdHolder.getTransactionId(),
+        log.info("The {} method in the {} class has been successfully executed.. ",
             joinPoint.getSignature().getName(),
             joinPoint.getTarget().getClass().getSimpleName());
     }

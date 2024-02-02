@@ -1,6 +1,7 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
+import com.example.learn_spring_core.client.service.TrainingItemService;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.TrainingType;
@@ -50,6 +51,9 @@ class TrainerServiceTest extends TestsParent {
     private TrainingTypeService trainingTypeService;
 
     @Mock
+    private TrainingItemService trainingItemService;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
@@ -81,6 +85,9 @@ class TrainerServiceTest extends TestsParent {
         Field hack5 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("jwtService");
         hack5.setAccessible(true);
         hack5.set(trainerService, jwtService);
+        Field hack6 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("trainingItemService");
+        hack6.setAccessible(true);
+        hack6.set(trainerService, trainingItemService);
         when(trainerRepository.save(any(Trainer.class))).thenAnswer(invocation -> {
             Trainer trainerArgument = invocation.getArgument(0);
             trainerArgument.setId(1L);
@@ -259,6 +266,7 @@ class TrainerServiceTest extends TestsParent {
         trainer.getTrainees().add(trainee);
 
         when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer));
+        when(traineeRepository.findById(1L)).thenReturn(Optional.of(trainee));
 
         trainerService.removeTraineeFromTrainer(2L, 1L);
 
