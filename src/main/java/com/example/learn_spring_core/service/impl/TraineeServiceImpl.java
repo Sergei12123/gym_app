@@ -51,7 +51,7 @@ public class TraineeServiceImpl extends UserServiceImpl<Trainee> implements Trai
             trainer.getTrainings()
                 .stream()
                 .filter(training -> training.getTrainee().getId().equals(traineeId))
-                .forEach(training -> trainingItemService.updateTrainingItem(training, ActionType.DELETE));
+                .forEach(training -> trainingService.delete(training));
             this.getById(traineeId).getTrainers().remove(trainer);
         });
     }

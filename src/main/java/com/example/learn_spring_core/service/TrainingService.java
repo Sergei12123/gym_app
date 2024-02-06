@@ -57,5 +57,11 @@ public interface TrainingService extends BaseService<Training> {
      */
     List<Training> getTrainerTrainingList(String trainerUserName, LocalDate dateFrom, LocalDate dateTo, String traineeUserName);
 
+    /**
+     * Delete training
+     *
+     * @param training entity of training
+     */
+    void delete(Training training);
 
 }

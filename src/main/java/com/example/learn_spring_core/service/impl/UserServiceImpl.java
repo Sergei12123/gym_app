@@ -1,6 +1,5 @@
 package com.example.learn_spring_core.service.impl;
 
-import com.example.learn_spring_core.client.service.TrainingItemService;
 import com.example.learn_spring_core.dto.UserCredentialsDTO;
 import com.example.learn_spring_core.dto.enums.ActionType;
 import com.example.learn_spring_core.entity.Trainee;
@@ -14,6 +13,7 @@ import com.example.learn_spring_core.repository.TrainingRepository;
 import com.example.learn_spring_core.repository.UserRepository;
 import com.example.learn_spring_core.security.BruteForceProtectionService;
 import com.example.learn_spring_core.security.JwtService;
+import com.example.learn_spring_core.service.TrainingService;
 import com.example.learn_spring_core.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +45,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
     protected TrainingRepository trainingRepository;
 
     @Autowired
-    protected TrainingItemService trainingItemService;
+    protected TrainingService trainingService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -128,7 +128,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
             } else {
                 trainings = trainingRepository.findByTrainer_UserName(userName);
             }
-            trainings.forEach(training -> trainingItemService.updateTrainingItem(training, ActionType.DELETE));
+            trainings.forEach(training -> trainingService.delete(training));
             currentRepository.delete(user.get());
         } else {
             throw new EntityNotFoundException(USER_NOT_FOUND_EX.formatted(userName));
@@ -199,7 +199,7 @@ public abstract class UserServiceImpl<T extends User> extends BaseServiceImpl<T>
         training.setTrainingDuration(1L);
         trainee.getTrainings().add(training);
         trainer.getTrainings().add(training);
-        trainingItemService.updateTrainingItem(training, ActionType.ADD);
+        trainingService.create(training);
     }
 
 }

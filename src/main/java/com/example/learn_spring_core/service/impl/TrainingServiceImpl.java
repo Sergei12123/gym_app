@@ -91,6 +91,10 @@ public class TrainingServiceImpl extends BaseServiceImpl<Training> implements Tr
             .toList();
     }
 
+    public void delete(Training entity) {
+        trainingItemService.updateTrainingItem(entity, ActionType.DELETE);
+    }
+
 
 }
 
