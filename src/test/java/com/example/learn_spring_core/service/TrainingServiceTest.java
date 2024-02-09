@@ -1,8 +1,7 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
-import com.example.learn_spring_core.client.service.TrainingItemService;
-import com.example.learn_spring_core.dto.enums.ActionType;
+import com.example.learn_spring_core.messaging.service.TrainingItemService;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.Training;
@@ -62,7 +61,7 @@ class TrainingServiceTest extends TestsParent {
         Training training = createSampleTraining(false);
         when(traineeRepository.findByUserName(training.getTrainee().getUserName())).thenReturn(Optional.of(training.getTrainee()));
         when(trainerRepository.findByUserName(training.getTrainer().getUserName())).thenReturn(Optional.of(training.getTrainer()));
-        trainingService.create( training);
+        trainingService.create(training);
 
         Mockito.verify(trainingRepository, times(1)).save(Mockito.any(Training.class));
     }

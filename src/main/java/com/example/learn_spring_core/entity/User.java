@@ -1,6 +1,7 @@
 package com.example.learn_spring_core.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,9 +36,12 @@ public abstract class User extends BaseEntity implements UserDetails {
 
     @Column(name = "is_active")
     protected Boolean isActive;
+
     protected User(String userName) {
         this.userName = userName;
+        this.isActive = true;
     }
+
     protected User(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;

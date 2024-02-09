@@ -2,7 +2,10 @@ package com.example.learn_spring_core.entity;
 
 import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Objects;
 

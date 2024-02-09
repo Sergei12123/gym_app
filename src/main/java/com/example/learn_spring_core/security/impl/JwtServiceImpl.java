@@ -9,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -39,8 +38,8 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateToken(UserDetails userDetails) {
         return generateToken(
-                Map.of("roles", userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(", "))),
-                userDetails
+            Map.of("roles", userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(", "))),
+            userDetails
         );
     }
 
@@ -57,11 +56,11 @@ public class JwtServiceImpl implements JwtService {
 
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256).compact();
+            .setClaims(extraClaims)
+            .setSubject(userDetails.getUsername())
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256).compact();
     }
 
     private boolean isTokenExpired(String token) {
@@ -74,10 +73,10 @@ public class JwtServiceImpl implements JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            .setSigningKey(getSigningKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
     }
 
     private Key getSigningKey() {
@@ -92,8 +91,7 @@ public class JwtServiceImpl implements JwtService {
         }
         String jwt = bearerToken.substring(7);
         String username = extractUserName(jwt);
-        if (StringUtils.isNotEmpty(username)
-            && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (StringUtils.isNotEmpty(username)) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             return isTokenValid(jwt, userDetails);
         }

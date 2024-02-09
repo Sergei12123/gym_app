@@ -1,7 +1,7 @@
 package com.example.learn_spring_core.service;
 
 import com.example.learn_spring_core.TestsParent;
-import com.example.learn_spring_core.client.service.TrainingItemService;
+import com.example.learn_spring_core.messaging.service.TrainingItemService;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.entity.TrainingType;

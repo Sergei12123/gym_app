@@ -43,7 +43,7 @@ public abstract class BaseServiceImpl<T extends BaseEntity> implements BaseServi
         }
     }
 
-    public String getBearerToken(){
+    public String getBearerToken() {
         return SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
     }
 }

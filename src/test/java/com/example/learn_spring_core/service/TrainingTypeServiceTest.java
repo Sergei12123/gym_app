@@ -4,7 +4,6 @@ import com.example.learn_spring_core.TestsParent;
 import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.entity.enums.TrainingTypeName;
 import com.example.learn_spring_core.repository.TrainingTypeRepository;
-import com.example.learn_spring_core.service.impl.TraineeServiceImpl;
 import com.example.learn_spring_core.service.impl.TrainingTypeServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

@@ -9,7 +9,7 @@ public interface TrainerService extends UserService<Trainer> {
     /**
      * Retrieves a list of active trainers who are not currently assigned to any trainee.
      *
-     * @return  A list of Trainer objects representing the not assigned active trainers.
+     * @return A list of Trainer objects representing the not assigned active trainers.
      */
     List<Trainer> getNotAssignedActiveTrainers();
 

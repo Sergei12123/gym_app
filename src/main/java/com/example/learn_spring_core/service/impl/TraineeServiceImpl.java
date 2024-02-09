@@ -1,7 +1,6 @@
 package com.example.learn_spring_core.service.impl;
 
 import com.example.learn_spring_core.dto.TrainerOfTraineeDTO;
-import com.example.learn_spring_core.dto.enums.ActionType;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.repository.TraineeRepository;

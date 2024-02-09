@@ -1,6 +1,6 @@
 package com.example.learn_spring_core.service.impl;
 
-import com.example.learn_spring_core.client.service.TrainingItemService;
+import com.example.learn_spring_core.messaging.service.TrainingItemService;
 import com.example.learn_spring_core.dto.enums.ActionType;
 import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;

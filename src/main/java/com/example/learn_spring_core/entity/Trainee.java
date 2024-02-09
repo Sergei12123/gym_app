@@ -26,9 +26,9 @@ public class Trainee extends User {
 
     @ManyToMany
     @JoinTable(
-            name = "training",
-            joinColumns = @JoinColumn(name = "trainee_id"),
-            inverseJoinColumns = @JoinColumn(name = "trainer_id")
+        name = "training",
+        joinColumns = @JoinColumn(name = "trainee_id"),
+        inverseJoinColumns = @JoinColumn(name = "trainer_id")
     )
     private Set<Trainer> trainers = new HashSet<>();
 
@@ -64,8 +64,8 @@ public class Trainee extends User {
         Trainee trainee = (Trainee) o;
 
         return super.equals(o) &&
-                Objects.equals(dateOfBirth, trainee.dateOfBirth) &&
-                Objects.equals(address, trainee.address);
+            Objects.equals(dateOfBirth, trainee.dateOfBirth) &&
+            Objects.equals(address, trainee.address);
     }
 
     @Override

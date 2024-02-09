@@ -7,3 +7,9 @@ services:
       - 9090:9090
     volumes:
       - ./src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml
+  rabbitmq:
+    image: rabbitmq:management
+    restart: no
+    ports:
+      - "5672:5672"
+      - "15672:15672"

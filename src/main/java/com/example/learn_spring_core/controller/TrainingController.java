@@ -1,6 +1,5 @@
 package com.example.learn_spring_core.controller;
 
-import com.example.learn_spring_core.client.TrainingItemClient;
 import com.example.learn_spring_core.dto.TraineeTrainingProfileDTO;
 import com.example.learn_spring_core.dto.TrainerTrainingProfileDTO;
 import com.example.learn_spring_core.entity.Training;
@@ -27,7 +26,6 @@ import java.util.List;
 public class TrainingController {
 
     private final TrainingService trainingService;
-    private final TrainingItemClient trainingItemClient;
 
     @Operation(summary = "Get trainee training list")
     @ApiResponses(value = {

@@ -17,14 +17,14 @@ public interface BaseService<T extends BaseEntity> {
     /**
      * Retrieves all elements from the list.
      *
-     * @return  a list containing all elements
+     * @return a list containing all elements
      */
     List<T> findAll();
 
     /**
      * Logs the provided entity object.
      *
-     * @param  entity  the entity object to be logged
+     * @param entity the entity object to be logged
      */
     void logEntityObject(T entity);
 

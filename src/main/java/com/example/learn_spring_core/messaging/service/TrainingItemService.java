@@ -1,4 +1,4 @@
-package com.example.learn_spring_core.client.service;
+package com.example.learn_spring_core.messaging.service;
 
 import com.example.learn_spring_core.dto.TrainerWorkloadDTO;
 import com.example.learn_spring_core.dto.enums.ActionType;

@@ -1,8 +1,8 @@
 package com.example.learn_spring_core.security.impl;
 
 import com.example.learn_spring_core.security.BruteForceProtectionService;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class BruteForceProtectionServiceImpl implements BruteForceProtectionServ
     @Override
     public boolean isAllowedToLogin(String userName) {
         return loginAttempts.get(userName) == null || loginAttempts.get(userName) < maxFailedLogins
-                || lockoutTime.get(userName) == null || lockoutTime.get(userName).isBefore(LocalDateTime.now());
+            || lockoutTime.get(userName) == null || lockoutTime.get(userName).isBefore(LocalDateTime.now());
     }
 
     @Override

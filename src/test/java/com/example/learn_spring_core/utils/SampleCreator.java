@@ -21,7 +21,7 @@ public class SampleCreator {
         return trainingType;
     }
 
-    public static List<TrainingType> createSampleTrainingTypes(boolean setId, int count){
+    public static List<TrainingType> createSampleTrainingTypes(boolean setId, int count) {
         final List<TrainingType> result = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
             TrainingType trainingType = createSampleTrainingType(setId);
@@ -97,7 +97,7 @@ public class SampleCreator {
         return training;
     }
 
-    public static List<Training> createSampleTrainings(boolean setId, int count){
+    public static List<Training> createSampleTrainings(boolean setId, int count) {
         final List<Training> result = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
             Training training = createSampleTraining(setId);
