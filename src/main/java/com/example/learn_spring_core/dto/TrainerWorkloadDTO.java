@@ -1,14 +1,14 @@
 package com.example.learn_spring_core.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Map;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TrainerWorkloadDTO {
 
     private String trainerUserName;

@@ -59,19 +59,19 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(Jackson2JsonMessageConverter jackson2JsonMessageConverter) {
+    public RabbitTemplate rabbitTemplate() {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(cachingConnectionFactory);
-        rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter);
+        rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
         rabbitTemplate.setBeforePublishPostProcessors(globalBeforePublishMessagePostProcessor);
         rabbitTemplate.setObservationEnabled(true);
         return rabbitTemplate;
     }
 
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(Jackson2JsonMessageConverter jackson2JsonMessageConverter) {
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(cachingConnectionFactory);
-        factory.setMessageConverter(jackson2JsonMessageConverter);
+        factory.setMessageConverter(jackson2JsonMessageConverter());
         factory.setErrorHandler(new ConditionalRejectingErrorHandler(
             new ConditionalRejectingErrorHandler.DefaultExceptionStrategy() {
                 @Override

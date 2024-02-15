@@ -7,6 +7,7 @@ import com.example.learn_spring_core.messaging.dto.TrainingItemDTO;
 import com.example.learn_spring_core.messaging.service.TrainingItemService;
 import lombok.AllArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 import static com.example.learn_spring_core.configuration.RabbitMQConfig.QUEUE_TRAINING_ITEM_TRAINER_WORKLOAD;
@@ -28,6 +29,6 @@ public class TrainingItemServiceImpl implements TrainingItemService {
 
     @Override
     public TrainerWorkloadDTO getTrainerWorkload(String trainerUserName) {
-        return (TrainerWorkloadDTO) rabbitTemplate.convertSendAndReceive(QUEUE_TRAINING_ITEM_TRAINER_WORKLOAD, trainerUserName);
+        return rabbitTemplate.convertSendAndReceiveAsType(QUEUE_TRAINING_ITEM_TRAINER_WORKLOAD, trainerUserName, ParameterizedTypeReference.forType(TrainerWorkloadDTO.class));
     }
 }
