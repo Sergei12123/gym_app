@@ -24,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -102,7 +103,8 @@ public class SpringIntegrationTestBase {
         return mainFeignClient.updateTraineeTrainersList(
             "Bearer " + loginResponse.getBody(),
             map.get("userName"),
-            List.of());
+            Optional.ofNullable(map.get("trainerUserNames")).map(names-> Arrays.stream(names.split(",")).toList()).orElse(List.of())
+        );
     }
 
 
