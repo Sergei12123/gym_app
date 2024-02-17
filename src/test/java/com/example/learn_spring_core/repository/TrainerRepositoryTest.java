@@ -1,12 +1,15 @@
 package com.example.learn_spring_core.repository;
 
+import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
+import com.example.learn_spring_core.entity.Training;
 import com.example.learn_spring_core.entity.TrainingType;
 import com.example.learn_spring_core.service.TrainerService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,9 +18,6 @@ import static com.example.learn_spring_core.utils.SampleCreator.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TrainerRepositoryTest extends BaseRepositoryTest {
-
-    @Autowired
-    private TrainerService trainerService;
 
     @Autowired
     private EntityManager entityManager;
@@ -127,13 +127,13 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
         Trainer activeTrainerWithoutTrainees = getSampleTrainerForSave(true);
 
         Trainer activeTrainerWithTrainees = getSampleTrainerForSave(true);
-        trainerService.addTraineeToTrainer(traineeRepository.save(createSampleTrainee(false)).getId(), activeTrainerWithTrainees.getId());  // добавляем тренируемого
+        addTraineeToTrainer(traineeRepository.save(createSampleTrainee(false)).getId(), activeTrainerWithTrainees.getId());  // добавляем тренируемого
 
         Trainer inactiveTrainerWithoutTrainees = getSampleTrainerForSave(true);
         inactiveTrainerWithoutTrainees.setIsActive(false);
 
         Trainer inactiveTrainerWithTrainees = getSampleTrainerForSave(true);
-        trainerService.addTraineeToTrainer(traineeRepository.save(createSampleTrainee(false)).getId(), inactiveTrainerWithTrainees.getId());  // добавляем тренируемого
+        addTraineeToTrainer(traineeRepository.save(createSampleTrainee(false)).getId(), inactiveTrainerWithTrainees.getId());  // добавляем тренируемого
         inactiveTrainerWithTrainees.setIsActive(false);
 
         trainerRepository.saveAll(List.of(
@@ -181,6 +181,28 @@ class TrainerRepositoryTest extends BaseRepositoryTest {
         assertTrue(trainerRepository.existsByFirstNameAndLastNameAndIsActiveTrue(sampleTrainer.getFirstName(), sampleTrainer.getLastName()));
 
         assertFalse(trainerRepository.existsByFirstNameAndLastNameAndIsActiveTrue("IncorrectFirstName", "IncorrectLastName"));
+    }
+
+    public void addTraineeToTrainer(Long traineeId, Long trainerId) {
+        Trainer trainer = trainerRepository.getById(trainerId);
+        Trainee trainee = traineeRepository.findById(traineeId).orElse(null);
+        if (trainee != null && trainer != null) {
+            createSampleTraining(trainer, trainee);
+            trainerRepository.save(trainer);
+            traineeRepository.save(trainee);
+        }
+    }
+
+    protected void createSampleTraining(Trainer trainer, Trainee trainee) {
+        Training training = new Training();
+        training.setTrainingName("new training");
+        training.setTrainer(trainer);
+        training.setTrainee(trainee);
+        training.setTrainingDate(LocalDate.now().plusDays(1));
+        training.setTrainingDuration(1L);
+        trainee.getTrainings().add(training);
+        trainer.getTrainings().add(training);
+        trainingRepository.save(training);
     }
 
 }

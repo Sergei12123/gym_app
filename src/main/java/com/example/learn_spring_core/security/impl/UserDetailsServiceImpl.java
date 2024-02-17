@@ -4,6 +4,7 @@ import com.example.learn_spring_core.entity.Trainee;
 import com.example.learn_spring_core.entity.Trainer;
 import com.example.learn_spring_core.repository.TraineeRepository;
 import com.example.learn_spring_core.repository.TrainerRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
@@ -27,11 +29,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         Optional<Trainer> optionalTrainer = trainerRepository.findByUserName(username);
+        log.info("trainer all: " + trainerRepository.count());
         if (optionalTrainer.isPresent()) {
             return optionalTrainer.get();
         }
 
         Optional<Trainee> optionalTrainee = traineeRepository.findByUserName(username);
+        log.info("trainee all: " + traineeRepository.count());
         if (optionalTrainee.isPresent()) {
             return optionalTrainee.get();
         }

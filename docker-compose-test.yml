@@ -1,0 +1,51 @@
+version: '3.7'
+
+services:
+  mongodb-test:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: qwerty
+    ports:
+      - "27017:27017"
+  rabbitmq-test:
+    image: rabbitmq:management
+    restart: no
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  zipkin-test:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+
+  microservice-test:
+    image: openjdk:latest
+    command: "java -jar /app/microservice.jar --spring.profiles.active=test"
+    volumes:
+      - ./src/test/resources/microservice-0.0.1-SNAPSHOT.jar:/app/microservice.jar
+    environment:
+      ZIPKIN_HOST: zipkin-test
+      RABBIT_MQ_HOST: rabbitmq-test
+      MONGO_DB_HOST: mongodb-test
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb-test
+      - rabbitmq-test
+      - zipkin-test
+
+  run-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    volumes:
+      - .:/app
+    environment:
+      ZIPKIN_HOST: zipkin-test
+      RABBIT_MQ_HOST: rabbitmq-test
+      SERVER_HOST: run-tests
+    working_dir: /app
+    command: "mvn test"
+    depends_on:
+      - microservice-test

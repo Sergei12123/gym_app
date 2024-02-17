@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-@FeignClient(name = "main-service", url = "http://localhost:${local.server.port}")
+@FeignClient(name = "main-service", url = "http://${server.host}:${local.server.port}")
 public interface MainFeignClient {
 
     @PostMapping("/training/add")

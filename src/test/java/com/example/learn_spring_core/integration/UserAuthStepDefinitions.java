@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserAuthStepDefinitions extends SpringIntegrationTestBase {
+public class UserAuthStepDefinitions extends SpringIntegrationTest {
 
     public static ResponseEntity<UserCredentialsDTO> traineeRegisterResponse;
 

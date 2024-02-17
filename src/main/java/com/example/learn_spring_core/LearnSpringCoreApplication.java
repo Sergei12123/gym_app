@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableRabbit
 @EnableScheduling
 @EnableFeignClients
-@EnableDiscoveryClient
 @SpringBootApplication
 public class LearnSpringCoreApplication {
     public static void main(String[] args) {

@@ -51,7 +51,7 @@ class TrainerServiceTest extends TestsParent {
     private TrainingTypeService trainingTypeService;
 
     @Mock
-    private TrainingItemService trainingItemService;
+    private TrainingService trainingService;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -85,9 +85,9 @@ class TrainerServiceTest extends TestsParent {
         Field hack5 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("jwtService");
         hack5.setAccessible(true);
         hack5.set(trainerService, jwtService);
-        Field hack6 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("trainingItemService");
+        Field hack6 = TraineeServiceImpl.class.getSuperclass().getDeclaredField("trainingService");
         hack6.setAccessible(true);
-        hack6.set(trainerService, trainingItemService);
+        hack6.set(trainerService, trainingService);
         when(trainerRepository.save(any(Trainer.class))).thenAnswer(invocation -> {
             Trainer trainerArgument = invocation.getArgument(0);
             trainerArgument.setId(1L);
