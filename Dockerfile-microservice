@@ -1,0 +1,9 @@
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+
+COPY /src/main/resources/microservice-0.0.1-SNAPSHOT.jar microservice-app.jar
+EXPOSE 8081
+CMD ["java", "-jar", "microservice-app.jar"]
+
+
+

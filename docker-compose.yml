@@ -1,15 +1,65 @@
 version: '3.7'
 
 services:
+  learn-spring-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - prometheus
+      - rabbitmq
+      - zipkin
+      - mysql
+    env_file:
+      - .env
+  microservice:
+    build:
+      context: .
+      dockerfile: Dockerfile-microservice
+    ports:
+      - "8081:8081"
+    depends_on:
+      - prometheus
+      - rabbitmq
+      - mongodb
+      - zipkin
+    env_file:
+      - .env
+
   prometheus:
     image: prom/prometheus
     ports:
-      - 9090:9090
+      - "9090:9090"
     volumes:
       - ./src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml
+
   rabbitmq:
     image: rabbitmq:management
     restart: no
     ports:
       - "5672:5672"
       - "15672:15672"
+
+  mongodb:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: qwerty
+    ports:
+      - "27017:27017"
+
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+  mysql:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: epam_db
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
