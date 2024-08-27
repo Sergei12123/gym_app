@@ -1,0 +1,14 @@
+package com.example.gym_app;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@EnableScheduling
+@SpringBootApplication
+public class LearnSpringCoreApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(LearnSpringCoreApplication.class, args);
+    }
+}
+
