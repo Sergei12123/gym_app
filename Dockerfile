@@ -9,7 +9,7 @@ COPY src/main/resources/ ./src/main/resources/
 RUN mvn clean -DskipTests=true package
 
 FROM openjdk:17-jdk-slim
-COPY --from=build /app/target/learn_spring_core-1.0-SNAPSHOT.jar /app/my-app.jar
+COPY --from=build /app/target/gym_app-1.0-SNAPSHOT.jar /app/my-app.jar
 EXPOSE 8080
 WORKDIR /app
 
