@@ -70,7 +70,7 @@ public class AppConfig {
 
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
-        factory.setPackagesToScan("com.example.learn_spring_core.entity");
+        factory.setPackagesToScan("com.example.gym_app.entity");
         factory.setDataSource(dataSource());
         return factory;
     }
